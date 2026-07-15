@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coin Breaker (Maker)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <!-- fallback 스타일(메인 CSS 주입 성공 시 자동 비활성화) -->
+    <link id="fallbackCss" rel="stylesheet" href="../style.css?v=20260715-184535" />
+    <!-- 메인(index.html)과 동일한 렌더링 CSS를 그대로 주입 -->
+    <script>
+      (async () => {
+        try {
+          const res = await fetch(`../index.html?ts=${Date.now()}`, { cache: "no-store" });
+          const html = await res.text();
+          const m = html.match(/<style>([\s\S]*?)<\/style>/i);
+          if (m && m[1]) {
+            const st = document.createElement("style");
+            st.id = "mainInlineCss";
+            st.textContent = m[1];
+            document.head.appendChild(st);
+            const fb = document.getElementById("fallbackCss");
+            if (fb) fb.disabled = true;
+          }
+        } catch (e) {
+          // ignore (fallback 스타일만 사용)
+          console.warn(e);
+        }
+      })();
+    </script>
+    <style>
+      /* maker: 메인 복제 기반, 프리셋/캡쳐 미리보기/네비게이터 제거 */
+      .app { grid-template-columns: 520px 600px; }
+      .controls { width: 600px; min-width: 600px; max-width: 600px; }
+      .controls h1 { margin: 0 0 14px; font-size: 18px; font-weight: 700; }
+      .hint { display: none; }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="topbar-left">Coin Breaker</div>
+      <div class="topbar-right">버전 <span id="buildVersion">20260715-184535</span></div>
+    </div>
+
+    <div class="app">
+      <div class="preview">
+        <div class="card-shell">
+          <div class="el-dialog">
+            <div class="el-dialog__header">
+              <span class="el-dialog__title"></span>
+            </div>
+            <div class="el-dialog__body">
+              <div class="dg-body cursor-pointer" id="cardRoot">
+                <div class="dgb-overlay"></div>
+                <img id="imgOverlay" data-html2canvas-ignore="true" style="position:absolute; inset:0; pointer-events:none; z-index:9999; opacity:0.5; display:none; transform-origin:top left;" />
+                <div class="dgb-content">
+                  <div class="dgb-header">
+                    <h2 class="dgb-title" data-nav-target=".dgb-title">futuresusdt</h2>
+                  </div>
+
+                  <div class="dgb-values">
+                    <div class="dgb-pct">
+                      <span id="txtPercent" data-nav-target="#txtPercent">19.75</span>
+                      <span id="txtPercentSign" data-nav-target="#txtPercentSign">%</span>
+                    </div>
+                    <div class="dgb-amt" id="txtProfit" data-nav-target="#txtProfit">10,229,614 원</div>
+                  </div>
+                  <div id="profitDivider" class="dgb-profit-divider" data-nav-target="#profitDivider"></div>
+
+                  <div class="dgb-separator"></div>
+
+                  <div class="dgb-grid">
+                    <div class="dgb-grid-item">
+                      <label class="dgb-grid-label" data-nav-target=".dgb-grid-item:nth-child(1) .dgb-grid-label">코인</label>
+                      <div class="dgb-grid-value-wrap">
+                        <span id="txtSymbol" data-nav-target="#txtSymbol">DOGE/USDT</span>
+                        <span id="txtSide" class="dgb-side-badge SHORT" data-nav-target="#txtSide">
+                          <span id="txtSideBox" class="dgb-side-box" aria-hidden="true" data-nav-target="#txtSideBox"></span>
+                          <span class="dgb-side-text">SHORT</span>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="dgb-grid-item">
+                      <label class="dgb-grid-label" data-nav-target=".dgb-grid-item:nth-child(2) .dgb-grid-label">레버리지</label>
+                      <span id="txtLeverage" class="dgb-grid-value" data-nav-target="#txtLeverage">100x</span>
+                    </div>
+                    <div class="dgb-grid-item">
+                      <label class="dgb-grid-label" data-nav-target=".dgb-grid-item:nth-child(3) .dgb-grid-label">진입가격</label>
+                      <span id="txtEntry" class="dgb-grid-value" data-nav-target="#txtEntry">0.08608</span>
+                    </div>
+                    <div class="dgb-grid-item">
+                      <label class="dgb-grid-label" data-nav-target=".dgb-grid-item:nth-child(4) .dgb-grid-label">종료가격</label>
+                      <span id="txtExit" class="dgb-grid-value" data-nav-target="#txtExit">0.08591</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button type="button" class="dgb-close-btn" data-nav-target=".dgb-close-btn">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-xicon w-4 h-4"
+                  >
+                    <path d="M18 6 6 18"></path>
+                    <path d="m6 6 12 12"></path>
+                  </svg>
+                  <span class="sr-only">Close</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="masked-preview-stage" data-html2canvas-ignore="true">
+            <div id="maskedPreviewEmpty" class="masked-preview-empty">프리셋0을 누르면 여기에 크롭 미리보기가 표시됩니다.</div>
+            <img id="croppedPreviewImg" class="masked-preview-img" alt="cropped preview" />
+          </div>
+        </div>
+
+        <div class="generate-wrap">
+          <button id="btnGenerate" class="primary" type="button">프리셋0</button>
+          <div id="warningNotice" class="warning-notice">
+            <span class="warn-long">LONG</span> / <span class="warn-short">SHORT</span> <span class="warn-text">확인요망</span>
+          </div>
+          <div class="generate-hint">프리셋0 버튼을 누르면 검은 박스 위에 크롭 미리보기가 뜨고 복사됩니다.</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <h1>Maker</h1>
+
+        <div class="grid">
+          <label>수익 퍼센트(최소)<input id="inpPercentMin" type="number" step="0.01" value="20" /></label>
+          <label>수익 퍼센트(최대)<input id="inpPercentMax" type="number" step="0.01" value="25" /></label>
+
+          <label>수익금(만원, 최소)<input id="inpProfitMin" type="number" step="1" value="300" /></label>
+          <label>수익금(만원, 최대)<input id="inpProfitMax" type="number" step="1" value="1000" /></label>
+
+          <label class="span-2">심볼(DOGE/USDT 등)<input id="inpSymbol" type="text" value="DOGE/USDT" /></label>
+
+          <label class="span-2">
+            포지션(LONG/SHORT)
+            <div class="side-toggle" role="group" aria-label="포지션 선택">
+              <button id="btnSideLong" class="secondary side-btn" type="button">LONG</button>
+              <button id="btnSideShort" class="secondary side-btn" type="button">SHORT</button>
+              <input id="inpSide" type="hidden" value="" />
+            </div>
+          </label>
+
+          <label class="span-2">
+            진입가격 / 실제진입가(자동)
+            <div class="dual-input">
+              <input id="inpEntry" type="text" value="0.11445" />
+              <input id="inpEntryReal" type="text" value="0.11445" disabled />
+            </div>
+          </label>
+
+          <details class="phrase-settings span-2">
+            <summary>진입가격 랜덤 설정</summary>
+            <div class="phrase-help">
+              메이커에서도 브레이커 메인과 별개로 진입가/종료가 랜덤 규칙을 설정합니다. 이 값은 메이커 전용으로 저장됩니다.
+            </div>
+            <div class="dual-input">
+              <label>랜덤 자리(소수점 n번째)
+                <input id="inpEntryRandPlace" type="number" min="1" max="5" step="1" value="2" />
+              </label>
+              <label>랜덤 갭(±n)
+                <input id="inpEntryRandGap" type="number" min="0" max="20" step="1" value="2" />
+              </label>
+            </div>
+            <div class="dual-input">
+              <label>진입가 000 확률(%)
+                <input id="inpEntryZeroProb" type="number" min="0" max="100" step="1" value="50" />
+              </label>
+              <label>종료가 000 확률(%)
+                <input id="inpExitZeroProb" type="number" min="0" max="100" step="1" value="50" />
+              </label>
+            </div>
+          </details>
+
+          <label class="span-2">종료가격(자동)<input id="inpExit" type="text" value="0.00000" disabled /></label>
+          <label class="span-2">레버리지<input id="inpLeverage" type="text" value="100x" /></label>
+
+          <label>생성 개수<input id="inpCount" type="number" min="1" max="300" value="1" /></label>
+          <label>ZIP 파일명 Prefix<input id="inpPrefix" type="text" value="screenshot" /></label>
+        </div>
+
+        <div class="actions">
+          <button id="btnDownloadZip" class="secondary" type="button">ZIP 저장</button>
+          <button id="btnReroll" class="secondary" type="button">미리보기 새로고침</button>
+          <button id="btnReset" class="secondary" type="button">초기화</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
+    <div id="centerTip" class="center-tip" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="../app.js?v=20260715-184535"></script>
+  </body>
+</html>
