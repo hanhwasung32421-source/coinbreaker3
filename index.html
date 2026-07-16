@@ -637,7 +637,7 @@ button.secondary{ background:#0c1220; }
           >maker</a
         >
       </div>
-      <div class="topbar-right">버전 <span id="buildVersion">20260715-184535</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">20260716-145432</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -771,6 +771,13 @@ button.secondary{ background:#0c1220; }
             </div>
             <div class="preset-profit-grid">
               <div class="preset-profit-row">
+                <div class="preset-profit-name">전체 배율(%)</div>
+                <input id="inpPresetProfitScalePct" type="number" min="0" max="1000" step="1" value="100" />
+                <div style="font-size:12px; color:rgba(231,238,252,.65); line-height:1.2;">
+                  예: 200% = 2배, 50% = 절반
+                </div>
+              </div>
+              <div class="preset-profit-row">
                 <div class="preset-profit-name">프리셋1 수익금</div>
                 <input id="inpPresetProfitMin1" type="text" placeholder="최소" />
                 <input id="inpPresetProfitMax1" type="text" placeholder="최대" />
@@ -881,6 +888,6 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="./app.js?v=20260715-184535"></script>
+    <script src="./app.js?v=20260716-145432"></script>
   </body>
 </html>

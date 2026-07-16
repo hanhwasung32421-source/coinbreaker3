@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "20260715-184535";
+  const BUILD_VERSION = "20260716-145432";
 
   const SUPABASE_URL = "https://dyfycrmltqosezmsufup.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -165,7 +165,9 @@
     "9": { min: "3500", max: "4500" },
     "10": { min: "5000", max: "6000" },
   };
+  const DEFAULT_PRESET_PROFIT_SCALE_PCT = 100;
   let presetProfitCfg = JSON.parse(JSON.stringify(DEFAULT_PRESET_PROFIT_CFG));
+  let presetProfitScalePct = DEFAULT_PRESET_PROFIT_SCALE_PCT;
   let presetPart4Assignment = null;
   let presetPart4PoolKey = "";
   let lastPresetRetryCtx = null;
@@ -561,6 +563,8 @@
       if (minEl) minEl.value = String(presetProfitCfg?.[k]?.min ?? "");
       if (maxEl) maxEl.value = String(presetProfitCfg?.[k]?.max ?? "");
     }
+    const scaleEl = document.getElementById("inpPresetProfitScalePct");
+    if (scaleEl) scaleEl.value = String(Math.round(clamp(presetProfitScalePct, 0, 1000)));
   }
 
   function readPresetProfitCfgFromUi() {
@@ -590,6 +594,15 @@
         el.addEventListener("input", onEdit);
         el.addEventListener("change", onEdit);
       });
+    }
+    const scaleEl = document.getElementById("inpPresetProfitScalePct");
+    if (scaleEl) {
+      const onScaleEdit = () => {
+        presetProfitScalePct = clamp(parseNumber(scaleEl.value, DEFAULT_PRESET_PROFIT_SCALE_PCT), 0, 1000);
+        scheduleCloudSave();
+      };
+      scaleEl.addEventListener("input", onScaleEdit);
+      scaleEl.addEventListener("change", onScaleEdit);
     }
     fillPresetProfitUiFromCfg();
   }
@@ -679,6 +692,7 @@
       entryVariationCfg: getEntryVariationCfg(),
       cropCfg,
       presetProfitCfg,
+      presetProfitScalePct,
       cardCustomStyles,
     };
   }
@@ -758,6 +772,7 @@
     // 이번 버전에서는 presetProfitCfg(수익금)로 재사용합니다.
     // (사용자가 "기존 진입가 범위에서 수정" 요청)
     presetProfitCfg = normalizePresetProfitCfg(state.presetProfitCfg || state.presetEntryCfg);
+    presetProfitScalePct = clamp(state.presetProfitScalePct ?? DEFAULT_PRESET_PROFIT_SCALE_PCT, 0, 1000);
     fillPhraseUiFromCfg();
     fillCropUiFromCfg();
     fillPresetProfitUiFromCfg();
@@ -1685,14 +1700,22 @@
         if (els.profitMin && pmin != null) els.profitMin.value = String(pmin);
         if (els.profitMax && pmax != null) els.profitMax.value = String(pmax);
 
-        // 프리셋별 수익금(만원) 범위 설정을 우선 적용
+        // 프리셋별 수익금(만원) 범위 설정을 우선 적용 (+ 전체 배율 % 반영)
         const pc = presetId != null ? presetProfitCfg?.[String(presetId)] : null;
         if (els.profitMin && els.profitMax && pc && pc.min != null && pc.max != null) {
           const mn = String(pc.min).trim();
           const mx = String(pc.max).trim();
+          const scalePct = clamp(presetProfitScalePct ?? DEFAULT_PRESET_PROFIT_SCALE_PCT, 0, 1000);
+          const scaleManWonText = (text) => {
+            const n = parseNumber(text, NaN);
+            if (!Number.isFinite(n)) return String(text ?? "").trim();
+            // 만원 단위이므로 보수적으로 내림 처리
+            const scaled = Math.floor((n * scalePct) / 100 + 1e-9);
+            return String(scaled);
+          };
           if (mn !== "" && mx !== "") {
-            els.profitMin.value = mn;
-            els.profitMax.value = mx;
+            els.profitMin.value = scaleManWonText(mn);
+            els.profitMax.value = scaleManWonText(mx);
             scheduleCloudSave();
           }
         }
