@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "20260716-145432";
+  const BUILD_VERSION = "20260716-163446";
 
   const SUPABASE_URL = "https://dyfycrmltqosezmsufup.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -109,6 +109,7 @@
   let previewIndex = -1;
   let samplePercent = null;
   let sampleProfit = null;
+  let sampleProfitRaw = null;
   let sampleEntry = null;
   let lastPercentKey = null;
   let lastProfitKey = null;
@@ -166,8 +167,21 @@
     "10": { min: "5000", max: "6000" },
   };
   const DEFAULT_PRESET_PROFIT_SCALE_PCT = 100;
+  const DEFAULT_PRESET_PROFIT_AUTO_SCALE = {
+    enabled: false,
+    // 규칙은 "나중에 체크한 항목은 체크가 안 되게" 하기 위해 서로 겹치지 않도록 강제합니다.
+    // 구간은 [min, max) 기준으로 판정합니다. (예: 20~30과 30~40은 허용)
+    rules: [
+      { enabled: true, minP: 20, maxP: 30, scalePct: 100 },
+      { enabled: true, minP: 30, maxP: 40, scalePct: 120 },
+      { enabled: true, minP: 40, maxP: 60, scalePct: 140 },
+      { enabled: false, minP: 60, maxP: 80, scalePct: 100 },
+      { enabled: false, minP: 80, maxP: 100, scalePct: 100 },
+    ],
+  };
   let presetProfitCfg = JSON.parse(JSON.stringify(DEFAULT_PRESET_PROFIT_CFG));
   let presetProfitScalePct = DEFAULT_PRESET_PROFIT_SCALE_PCT;
+  let presetProfitAutoScale = JSON.parse(JSON.stringify(DEFAULT_PRESET_PROFIT_AUTO_SCALE));
   let presetPart4Assignment = null;
   let presetPart4PoolKey = "";
   let lastPresetRetryCtx = null;
@@ -337,6 +351,31 @@
     return { percent: p, profit: f };
   }
 
+  function getEffectiveProfitScalePctForPercent(percentValue) {
+    const p = Math.abs(Number(percentValue) || 0);
+    if (presetProfitAutoScale?.enabled) {
+      const rules = Array.isArray(presetProfitAutoScale.rules) ? presetProfitAutoScale.rules : [];
+      for (const r of rules) {
+        if (!r || !r.enabled) continue;
+        const mn = Number(r.minP);
+        const mx = Number(r.maxP);
+        if (!Number.isFinite(mn) || !Number.isFinite(mx)) continue;
+        const lo = Math.min(mn, mx);
+        const hi = Math.max(mn, mx);
+        // [min, max)
+        if (p >= lo && p < hi) return clamp(r.scalePct, 0, 1000);
+      }
+    }
+    return clamp(presetProfitScalePct ?? DEFAULT_PRESET_PROFIT_SCALE_PCT, 0, 1000);
+  }
+
+  function applyProfitScale(won, scalePct) {
+    const w = Number(won);
+    if (!Number.isFinite(w)) return Number(won) || 0;
+    const s = clamp(scalePct, 0, 1000);
+    return Math.floor((w * s) / 100 + 1e-9);
+  }
+
   function formatProfit(won) {
     return `${Number(won).toLocaleString("en-US")} 원`;
   }
@@ -405,7 +444,9 @@
   // 프리셋 수익금 범위는 "만원" 단위 문자열을 저장합니다. (예: 50 ~ 100)
 
   function buildRenderItem(baseEntry) {
-    const { percent, profit } = randomPercentProfit();
+    const { percent, profit: rawProfit } = randomPercentProfit();
+    const scalePct = getEffectiveProfitScalePctForPercent(percent);
+    const profit = applyProfitScale(rawProfit, scalePct);
     return { percent, profit, entry: randomEntryFromBase(baseEntry) };
   }
 
@@ -565,6 +606,23 @@
     }
     const scaleEl = document.getElementById("inpPresetProfitScalePct");
     if (scaleEl) scaleEl.value = String(Math.round(clamp(presetProfitScalePct, 0, 1000)));
+
+    // 자동 배율 UI
+    const autoChk = document.getElementById("chkPresetProfitAutoScale");
+    const autoWrap = document.getElementById("presetProfitAutoScaleWrap");
+    if (autoChk) autoChk.checked = !!presetProfitAutoScale?.enabled;
+    if (autoWrap) autoWrap.style.display = presetProfitAutoScale?.enabled ? "block" : "none";
+    for (let i = 1; i <= 5; i++) {
+      const r = presetProfitAutoScale?.rules?.[i - 1] || DEFAULT_PRESET_PROFIT_AUTO_SCALE.rules[i - 1];
+      const chk = document.getElementById(`chkPresetProfitAutoRule${i}`);
+      const minEl = document.getElementById(`inpPresetProfitAutoMin${i}`);
+      const maxEl = document.getElementById(`inpPresetProfitAutoMax${i}`);
+      const scaleEl2 = document.getElementById(`inpPresetProfitAutoScale${i}`);
+      if (chk) chk.checked = !!r?.enabled;
+      if (minEl) minEl.value = String(r?.minP ?? "");
+      if (maxEl) maxEl.value = String(r?.maxP ?? "");
+      if (scaleEl2) scaleEl2.value = String(r?.scalePct ?? "");
+    }
   }
 
   function readPresetProfitCfgFromUi() {
@@ -578,6 +636,125 @@
       out[k] = { min, max };
     }
     return out;
+  }
+
+  function normalizePresetProfitAutoScale(cfg) {
+    const base = JSON.parse(JSON.stringify(DEFAULT_PRESET_PROFIT_AUTO_SCALE));
+    if (!cfg || typeof cfg !== "object") return base;
+    base.enabled = !!cfg.enabled;
+    const inRules = Array.isArray(cfg.rules) ? cfg.rules : [];
+    base.rules = base.rules.map((r, idx) => {
+      const v = inRules[idx] && typeof inRules[idx] === "object" ? inRules[idx] : r;
+      const minP = parseNumber(v.minP, r.minP);
+      const maxP = parseNumber(v.maxP, r.maxP);
+      const a = Number.isFinite(minP) ? minP : r.minP;
+      const b = Number.isFinite(maxP) ? maxP : r.maxP;
+      return {
+        enabled: !!v.enabled,
+        minP: Math.min(a, b),
+        maxP: Math.max(a, b),
+        scalePct: clamp(parseNumber(v.scalePct, r.scalePct), 0, 1000),
+      };
+    });
+    return base;
+  }
+
+  function readPresetProfitAutoScaleFromUi() {
+    const out = normalizePresetProfitAutoScale(presetProfitAutoScale);
+    const autoChk = document.getElementById("chkPresetProfitAutoScale");
+    out.enabled = !!autoChk?.checked;
+    out.rules = out.rules.map((r, idx) => {
+      const i = idx + 1;
+      const chk = document.getElementById(`chkPresetProfitAutoRule${i}`);
+      const minEl = document.getElementById(`inpPresetProfitAutoMin${i}`);
+      const maxEl = document.getElementById(`inpPresetProfitAutoMax${i}`);
+      const scaleEl = document.getElementById(`inpPresetProfitAutoScale${i}`);
+      const minP = parseNumber(minEl?.value, r.minP);
+      const maxP = parseNumber(maxEl?.value, r.maxP);
+      return {
+        enabled: !!chk?.checked,
+        minP: Math.min(minP, maxP),
+        maxP: Math.max(minP, maxP),
+        scalePct: clamp(parseNumber(scaleEl?.value, r.scalePct), 0, 1000),
+      };
+    });
+    return out;
+  }
+
+  function rangesOverlap(aMin, aMax, bMin, bMax) {
+    const A0 = Math.min(aMin, aMax);
+    const A1 = Math.max(aMin, aMax);
+    const B0 = Math.min(bMin, bMax);
+    const B1 = Math.max(bMin, bMax);
+    // [min, max) 기준
+    return A0 < B1 && A1 > B0;
+  }
+
+  function validateAutoScaleNoOverlap(changedIndex0Based) {
+    const cfg = readPresetProfitAutoScaleFromUi();
+    const changed = cfg.rules[changedIndex0Based];
+    if (!changed || !changed.enabled) return true;
+    for (let j = 0; j < cfg.rules.length; j++) {
+      if (j === changedIndex0Based) continue;
+      const other = cfg.rules[j];
+      if (!other?.enabled) continue;
+      if (rangesOverlap(changed.minP, changed.maxP, other.minP, other.maxP)) {
+        // 나중에 체크한 건 체크 해제
+        const chk = document.getElementById(`chkPresetProfitAutoRule${changedIndex0Based + 1}`);
+        if (chk) chk.checked = false;
+        showToastFor("수익률 구간이 겹쳐서 중복 체크할 수 없습니다.", 2500);
+        // cfg 갱신(해제 반영)
+        presetProfitAutoScale = readPresetProfitAutoScaleFromUi();
+        scheduleCloudSave();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function bindPresetProfitAutoScaleUi() {
+    const autoChk = document.getElementById("chkPresetProfitAutoScale");
+    const autoWrap = document.getElementById("presetProfitAutoScaleWrap");
+    if (autoChk) {
+      autoChk.addEventListener("change", () => {
+        presetProfitAutoScale = readPresetProfitAutoScaleFromUi();
+        if (autoWrap) autoWrap.style.display = presetProfitAutoScale.enabled ? "block" : "none";
+        scheduleCloudSave();
+      });
+    }
+    for (let i = 1; i <= 5; i++) {
+      const idx = i - 1;
+      const chk = document.getElementById(`chkPresetProfitAutoRule${i}`);
+      const minEl = document.getElementById(`inpPresetProfitAutoMin${i}`);
+      const maxEl = document.getElementById(`inpPresetProfitAutoMax${i}`);
+      const scaleEl = document.getElementById(`inpPresetProfitAutoScale${i}`);
+      if (chk) {
+        chk.addEventListener("change", () => {
+          presetProfitAutoScale = readPresetProfitAutoScaleFromUi();
+          if (chk.checked) validateAutoScaleNoOverlap(idx);
+          else scheduleCloudSave();
+        });
+      }
+      [minEl, maxEl, scaleEl].forEach((el) => {
+        if (!el) return;
+        el.addEventListener("input", () => {
+          presetProfitAutoScale = readPresetProfitAutoScaleFromUi();
+          if (document.getElementById(`chkPresetProfitAutoRule${i}`)?.checked) {
+            validateAutoScaleNoOverlap(idx);
+          } else {
+            scheduleCloudSave();
+          }
+        });
+        el.addEventListener("change", () => {
+          presetProfitAutoScale = readPresetProfitAutoScaleFromUi();
+          if (document.getElementById(`chkPresetProfitAutoRule${i}`)?.checked) {
+            validateAutoScaleNoOverlap(idx);
+          } else {
+            scheduleCloudSave();
+          }
+        });
+      });
+    }
   }
 
   function bindPresetProfitUi() {
@@ -604,6 +781,7 @@
       scaleEl.addEventListener("input", onScaleEdit);
       scaleEl.addEventListener("change", onScaleEdit);
     }
+    bindPresetProfitAutoScaleUi();
     fillPresetProfitUiFromCfg();
   }
 
@@ -693,6 +871,7 @@
       cropCfg,
       presetProfitCfg,
       presetProfitScalePct,
+      presetProfitAutoScale,
       cardCustomStyles,
     };
   }
@@ -773,6 +952,7 @@
     // (사용자가 "기존 진입가 범위에서 수정" 요청)
     presetProfitCfg = normalizePresetProfitCfg(state.presetProfitCfg || state.presetEntryCfg);
     presetProfitScalePct = clamp(state.presetProfitScalePct ?? DEFAULT_PRESET_PROFIT_SCALE_PCT, 0, 1000);
+    presetProfitAutoScale = normalizePresetProfitAutoScale(state.presetProfitAutoScale);
     fillPhraseUiFromCfg();
     fillCropUiFromCfg();
     fillPresetProfitUiFromCfg();
@@ -1000,13 +1180,14 @@
     const fk = `${String(els.profitMin?.value || "")}|${String(els.profitMax?.value || "")}`;
     const { minP, maxP } = getPercentMinMax();
     const pk = `${minP}|${maxP}`;
-    if (force || pk !== lastPercentKey || fk !== lastProfitKey || samplePercent == null || sampleProfit == null) {
+    if (force || pk !== lastPercentKey || fk !== lastProfitKey || samplePercent == null || sampleProfitRaw == null) {
       samplePercent = pickPercent2NoZeroSecondDigit(minP, maxP);
       const { minWon, maxWon } = getProfitMinMax();
-      sampleProfit = minWon === maxWon ? minWon : randInt(minWon, maxWon);
+      sampleProfitRaw = minWon === maxWon ? minWon : randInt(minWon, maxWon);
       lastPercentKey = pk;
       lastProfitKey = fk;
     }
+    sampleProfit = applyProfitScale(sampleProfitRaw, getEffectiveProfitScalePctForPercent(samplePercent));
     return { percent: samplePercent, profit: sampleProfit };
   }
 
@@ -1423,14 +1604,14 @@
       previewIndex,
       samplePercent,
       sampleProfit,
+      sampleProfitRaw,
       sampleEntry,
       lastEntryBase,
     };
     const baseEntry = String(els.entry?.value || "").trim();
     for (let i = 1; i <= n; i++) {
-      const { percent, profit } = randomPercentProfit();
-      const entry = randomEntryFromBase(baseEntry);
-      renderCard({ percent, profit, entry });
+      const item = buildRenderItem(baseEntry);
+      renderCard(item);
       const canvas = await renderCardCanvas();
       const blob = await new Promise((resolve, reject) =>
         canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("캡처 실패"))), "image/png")
@@ -1441,6 +1622,7 @@
     previewIndex = snapshot.previewIndex;
     samplePercent = snapshot.samplePercent;
     sampleProfit = snapshot.sampleProfit;
+    sampleProfitRaw = snapshot.sampleProfitRaw;
     sampleEntry = snapshot.sampleEntry;
     lastEntryBase = snapshot.lastEntryBase;
     renderAll();
@@ -1700,22 +1882,15 @@
         if (els.profitMin && pmin != null) els.profitMin.value = String(pmin);
         if (els.profitMax && pmax != null) els.profitMax.value = String(pmax);
 
-        // 프리셋별 수익금(만원) 범위 설정을 우선 적용 (+ 전체 배율 % 반영)
+        // 프리셋별 수익금(만원) 범위 설정을 우선 적용
+        // (배율은 생성 단계에서 percent에 따라 자동/수동으로 적용합니다)
         const pc = presetId != null ? presetProfitCfg?.[String(presetId)] : null;
         if (els.profitMin && els.profitMax && pc && pc.min != null && pc.max != null) {
           const mn = String(pc.min).trim();
           const mx = String(pc.max).trim();
-          const scalePct = clamp(presetProfitScalePct ?? DEFAULT_PRESET_PROFIT_SCALE_PCT, 0, 1000);
-          const scaleManWonText = (text) => {
-            const n = parseNumber(text, NaN);
-            if (!Number.isFinite(n)) return String(text ?? "").trim();
-            // 만원 단위이므로 보수적으로 내림 처리
-            const scaled = Math.floor((n * scalePct) / 100 + 1e-9);
-            return String(scaled);
-          };
           if (mn !== "" && mx !== "") {
-            els.profitMin.value = scaleManWonText(mn);
-            els.profitMax.value = scaleManWonText(mx);
+            els.profitMin.value = mn;
+            els.profitMax.value = mx;
             scheduleCloudSave();
           }
         }

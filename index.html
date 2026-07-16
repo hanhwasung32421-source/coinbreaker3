@@ -637,7 +637,7 @@ button.secondary{ background:#0c1220; }
           >maker</a
         >
       </div>
-      <div class="topbar-right">버전 <span id="buildVersion">20260716-145432</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">20260716-163446</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -778,6 +778,109 @@ button.secondary{ background:#0c1220; }
                 </div>
               </div>
               <div class="preset-profit-row">
+                <div class="preset-profit-name">자동배율적용</div>
+                <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:rgba(231,238,252,.85);">
+                  <input id="chkPresetProfitAutoScale" type="checkbox" />
+                  체크 시 아래 규칙이 적용됩니다
+                </label>
+                <div style="font-size:12px; color:rgba(231,238,252,.65); line-height:1.2;">
+                  수익률 구간별로 수익금 배율을 자동 적용
+                </div>
+              </div>
+
+              <div id="presetProfitAutoScaleWrap" class="span-2" style="display:none; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.08); background:#0c1220;">
+                <div style="display:grid; gap:10px;">
+                  <div class="preset-profit-row" style="grid-template-columns: 150px 1fr 140px;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:rgba(231,238,252,.9);">
+                      <input id="chkPresetProfitAutoRule1" type="checkbox" />
+                      수익률 1
+                    </label>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                      <input id="inpPresetProfitAutoMin1" type="number" step="0.01" placeholder="예: 20" />
+                      <span style="color:rgba(231,238,252,.6);">~</span>
+                      <input id="inpPresetProfitAutoMax1" type="number" step="0.01" placeholder="예: 30" />
+                      <span style="color:rgba(231,238,252,.6);">%</span>
+                    </div>
+                    <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+                      <span style="font-size:12px; color:rgba(231,238,252,.7);">배율</span>
+                      <input id="inpPresetProfitAutoScale1" type="number" min="0" max="1000" step="1" placeholder="100" style="width:78px;" />
+                      <span style="font-size:12px; color:rgba(231,238,252,.6);">%</span>
+                    </div>
+                  </div>
+                  <div class="preset-profit-row" style="grid-template-columns: 150px 1fr 140px;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:rgba(231,238,252,.9);">
+                      <input id="chkPresetProfitAutoRule2" type="checkbox" />
+                      수익률 2
+                    </label>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                      <input id="inpPresetProfitAutoMin2" type="number" step="0.01" placeholder="예: 30" />
+                      <span style="color:rgba(231,238,252,.6);">~</span>
+                      <input id="inpPresetProfitAutoMax2" type="number" step="0.01" placeholder="예: 40" />
+                      <span style="color:rgba(231,238,252,.6);">%</span>
+                    </div>
+                    <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+                      <span style="font-size:12px; color:rgba(231,238,252,.7);">배율</span>
+                      <input id="inpPresetProfitAutoScale2" type="number" min="0" max="1000" step="1" placeholder="120" style="width:78px;" />
+                      <span style="font-size:12px; color:rgba(231,238,252,.6);">%</span>
+                    </div>
+                  </div>
+                  <div class="preset-profit-row" style="grid-template-columns: 150px 1fr 140px;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:rgba(231,238,252,.9);">
+                      <input id="chkPresetProfitAutoRule3" type="checkbox" />
+                      수익률 3
+                    </label>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                      <input id="inpPresetProfitAutoMin3" type="number" step="0.01" placeholder="예: 40" />
+                      <span style="color:rgba(231,238,252,.6);">~</span>
+                      <input id="inpPresetProfitAutoMax3" type="number" step="0.01" placeholder="예: 60" />
+                      <span style="color:rgba(231,238,252,.6);">%</span>
+                    </div>
+                    <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+                      <span style="font-size:12px; color:rgba(231,238,252,.7);">배율</span>
+                      <input id="inpPresetProfitAutoScale3" type="number" min="0" max="1000" step="1" placeholder="140" style="width:78px;" />
+                      <span style="font-size:12px; color:rgba(231,238,252,.6);">%</span>
+                    </div>
+                  </div>
+                  <div class="preset-profit-row" style="grid-template-columns: 150px 1fr 140px;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:rgba(231,238,252,.9);">
+                      <input id="chkPresetProfitAutoRule4" type="checkbox" />
+                      수익률 4
+                    </label>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                      <input id="inpPresetProfitAutoMin4" type="number" step="0.01" placeholder="예: 60" />
+                      <span style="color:rgba(231,238,252,.6);">~</span>
+                      <input id="inpPresetProfitAutoMax4" type="number" step="0.01" placeholder="예: 80" />
+                      <span style="color:rgba(231,238,252,.6);">%</span>
+                    </div>
+                    <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+                      <span style="font-size:12px; color:rgba(231,238,252,.7);">배율</span>
+                      <input id="inpPresetProfitAutoScale4" type="number" min="0" max="1000" step="1" placeholder="100" style="width:78px;" />
+                      <span style="font-size:12px; color:rgba(231,238,252,.6);">%</span>
+                    </div>
+                  </div>
+                  <div class="preset-profit-row" style="grid-template-columns: 150px 1fr 140px;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:rgba(231,238,252,.9);">
+                      <input id="chkPresetProfitAutoRule5" type="checkbox" />
+                      수익률 5
+                    </label>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                      <input id="inpPresetProfitAutoMin5" type="number" step="0.01" placeholder="예: 80" />
+                      <span style="color:rgba(231,238,252,.6);">~</span>
+                      <input id="inpPresetProfitAutoMax5" type="number" step="0.01" placeholder="예: 100" />
+                      <span style="color:rgba(231,238,252,.6);">%</span>
+                    </div>
+                    <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+                      <span style="font-size:12px; color:rgba(231,238,252,.7);">배율</span>
+                      <input id="inpPresetProfitAutoScale5" type="number" min="0" max="1000" step="1" placeholder="100" style="width:78px;" />
+                      <span style="font-size:12px; color:rgba(231,238,252,.6);">%</span>
+                    </div>
+                  </div>
+                  <div style="font-size:12px; color:rgba(231,238,252,.65); line-height:1.35;">
+                    구간이 겹치면 중복 체크할 수 없습니다. (나중에 체크한 항목은 자동으로 체크 해제됩니다)
+                  </div>
+                </div>
+              </div>
+              <div class="preset-profit-row">
                 <div class="preset-profit-name">프리셋1 수익금</div>
                 <input id="inpPresetProfitMin1" type="text" placeholder="최소" />
                 <input id="inpPresetProfitMax1" type="text" placeholder="최대" />
@@ -888,6 +991,6 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="./app.js?v=20260716-145432"></script>
+    <script src="./app.js?v=20260716-163446"></script>
   </body>
 </html>
