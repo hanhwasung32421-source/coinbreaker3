@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "20260720-105243";
+  const BUILD_VERSION = "20260720-145647";
 
   const SUPABASE_URL = "https://dyfycrmltqosezmsufup.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -85,6 +85,9 @@
     phrasePart3: document.getElementById("inpPhrasePart3"),
     phrasePart4: document.getElementById("inpPhrasePart4"),
     phrasePart4Prob: document.getElementById("inpPhrasePart4Prob"),
+    congratsLines: document.getElementById("inpCongratsLines"),
+    presetCongratsBtn: document.getElementById("btnPresetCongrats"),
+    presetCongratsCaption: document.getElementById("presetCongratsCaption"),
 
     txtPercent: document.getElementById("txtPercent"),
     txtProfit: document.getElementById("txtProfit"),
@@ -115,6 +118,7 @@
   let lastProfitKey = null;
   let lastEntryBase = null;
   let lastPresetPhrase = "";
+  let lastCongratsPhrase = "";
   let lastCroppedPreviewUrl = null;
   let bgShiftX = 0;
   let bgShiftY = 0;
@@ -136,6 +140,16 @@
     part4: ["", "", "", "", "", "", "", "대표님.", "대단하십니다.", "대박입니다."],
     part4Prob: 25,
   };
+  const DEFAULT_CONGRATS_CFG = {
+    lines: [
+      "축하합니다~",
+      "수익 축하합니다",
+      "수익 축하해요",
+      "다들 시크가 크시네요. 수익 축하드립니다.",
+      "모두들 수익 축하합니다.",
+      "축하드립니다.",
+    ],
+  };
   const DEFAULT_ENTRY_VARIATION_CFG = {
     decimalPlace: 2,
     gap: 2,
@@ -143,6 +157,7 @@
     exitZeroProb: 50,
   };
   let phraseCfg = JSON.parse(JSON.stringify(DEFAULT_PHRASE_CFG));
+  let congratsCfg = JSON.parse(JSON.stringify(DEFAULT_CONGRATS_CFG));
   const DEFAULT_CROP_CFG = {
     fullCaptureProb: 5,
     widthMinPct: 50,
@@ -563,12 +578,22 @@
     return (arr || []).map((x) => String(x ?? "")).join("\n");
   }
 
+  function linesToTextList(text, fallbackArr) {
+    const lines = String(text ?? "")
+      .replace(/\r\n/g, "\n")
+      .split("\n")
+      .map((x) => String(x ?? "").trim())
+      .filter(Boolean);
+    return lines.length ? lines : Array.isArray(fallbackArr) ? fallbackArr.slice() : [];
+  }
+
   function fillPhraseUiFromCfg() {
     if (els.phraseFmt) els.phraseFmt.value = cfgArrayToText(phraseCfg.fmt);
     if (els.phraseUnit) els.phraseUnit.value = cfgArrayToText(phraseCfg.unit);
     if (els.phrasePart3) els.phrasePart3.value = cfgArrayToText(phraseCfg.part3);
     if (els.phrasePart4) els.phrasePart4.value = cfgArrayToText(phraseCfg.part4);
     if (els.phrasePart4Prob) els.phrasePart4Prob.value = String(clamp(phraseCfg.part4Prob, 0, 100));
+    if (els.congratsLines) els.congratsLines.value = cfgArrayToText(congratsCfg.lines);
   }
 
   function readPhraseCfgFromUi() {
@@ -578,6 +603,12 @@
       part3: linesToWeightedArray(els.phrasePart3?.value, DEFAULT_PHRASE_CFG.part3),
       part4: linesToWeightedArray(els.phrasePart4?.value, DEFAULT_PHRASE_CFG.part4),
       part4Prob: clamp(els.phrasePart4Prob?.value, 0, 100),
+    };
+  }
+
+  function readCongratsCfgFromUi() {
+    return {
+      lines: linesToTextList(els.congratsLines?.value, DEFAULT_CONGRATS_CFG.lines),
     };
   }
 
@@ -853,6 +884,11 @@
     return `${`${numText}${unit}`.trim()} ${part4 ? `${part3} ${part4}` : part3}`.trim();
   }
 
+  function makeCongratsPhrase() {
+    const list = Array.isArray(congratsCfg?.lines) ? congratsCfg.lines : DEFAULT_CONGRATS_CFG.lines;
+    return pickFrom(list, "축하합니다~");
+  }
+
   function collectState() {
     const toVal = (el) => (el ? String(el.value ?? "") : "");
     return {
@@ -883,6 +919,7 @@
         y: Math.round(Number(overlayState?.y) || 0),
       },
       phraseCfg,
+      congratsCfg,
       entryVariationCfg: getEntryVariationCfg(),
       cropCfg,
       presetProfitCfg,
@@ -947,6 +984,15 @@
         part4: Array.isArray(pc.part4) ? pc.part4 : DEFAULT_PHRASE_CFG.part4,
         part4Prob: clamp(pc.part4Prob, 0, 100),
       };
+    }
+    if (state.congratsCfg && typeof state.congratsCfg === "object") {
+      congratsCfg = {
+        lines: Array.isArray(state.congratsCfg.lines) && state.congratsCfg.lines.length
+          ? state.congratsCfg.lines.map((x) => String(x ?? "").trim()).filter(Boolean)
+          : DEFAULT_CONGRATS_CFG.lines.slice(),
+      };
+    } else {
+      congratsCfg = JSON.parse(JSON.stringify(DEFAULT_CONGRATS_CFG));
     }
     if (state.cropCfg && typeof state.cropCfg === "object") {
       const cc = state.cropCfg;
@@ -1706,6 +1752,15 @@
       el.addEventListener("input", onEdit);
       el.addEventListener("change", onEdit);
     });
+
+    const onCongratsEdit = () => {
+      congratsCfg = readCongratsCfgFromUi();
+      scheduleCloudSave();
+    };
+    if (els.congratsLines) {
+      els.congratsLines.addEventListener("input", onCongratsEdit);
+      els.congratsLines.addEventListener("change", onCongratsEdit);
+    }
   }
 
   function bindEntryVariationUi() {
@@ -1883,7 +1938,7 @@
     }
 
     let firstPresetHintShown = false;
-    document.querySelectorAll(".preset-btn").forEach((btn) => {
+    document.querySelectorAll(".preset-btn[data-preset]").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const presetId = btn.getAttribute("data-preset");
         const part4List = getPart4ListAll(phraseCfg || DEFAULT_PHRASE_CFG);
@@ -1953,6 +2008,26 @@
         }
       });
     });
+
+    if (els.presetCongratsBtn) {
+      els.presetCongratsBtn.addEventListener("click", () => {
+        let phrase = "";
+        for (let i = 0; i < 20; i++) {
+          phrase = makeCongratsPhrase();
+          if (phrase && phrase !== lastCongratsPhrase) break;
+        }
+        lastCongratsPhrase = phrase;
+        if (els.presetCongratsCaption) {
+          els.presetCongratsCaption.textContent = phrase;
+          const range = document.createRange();
+          range.selectNodeContents(els.presetCongratsCaption);
+          const sel = window.getSelection();
+          sel?.removeAllRanges();
+          sel?.addRange(range);
+        }
+        showToastFor("축하 문구 생성됨", 1200);
+      });
+    }
 
     // Unified Navigator event bindings
     const selTarget = document.getElementById("selNavTarget");

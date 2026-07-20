@@ -637,7 +637,7 @@ button.secondary{ background:#0c1220; }
           >maker</a
         >
       </div>
-      <div class="topbar-right">버전 <span id="buildVersion">20260720-105243</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">20260720-145647</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -738,6 +738,9 @@ button.secondary{ background:#0c1220; }
             <div class="preset-caption" data-preset="8"></div>
             <div class="preset-caption" data-preset="9"></div>
             <div class="preset-caption" data-preset="10"></div>
+
+            <button id="btnPresetCongrats" class="secondary preset-btn" type="button" style="grid-column:5;">프리셋축하</button>
+            <div id="presetCongratsCaption" class="preset-caption" style="grid-column:5;"></div>
           </div>
 
           <details class="phrase-settings">
@@ -760,6 +763,18 @@ button.secondary{ background:#0c1220; }
               </label>
               <label>4) 추가 문구 붙는 확률(%)
                 <input id="inpPhrasePart4Prob" type="number" min="0" max="100" step="1" value="25" />
+              </label>
+            </div>
+          </details>
+
+          <details class="phrase-settings">
+            <summary>프리셋 축하 문구 설정</summary>
+            <div class="phrase-help">
+              `프리셋축하` 버튼을 누르면 아래 목록 중 1개가 랜덤으로 나옵니다. 줄을 추가하거나 지우면 자동 저장됩니다.
+            </div>
+            <div class="phrase-grid">
+              <label class="span-2">축하 문구 목록
+                <textarea id="inpCongratsLines" rows="8" spellcheck="false"></textarea>
               </label>
             </div>
           </details>
@@ -991,6 +1006,6 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="./app.js?v=20260720-105243"></script>
+    <script src="./app.js?v=20260720-145647"></script>
   </body>
 </html>
