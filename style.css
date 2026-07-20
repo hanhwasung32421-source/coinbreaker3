@@ -157,6 +157,12 @@ input, textarea{
   outline:none;
 }
 input:disabled{ background:#2a2f3a; color:rgba(231,238,252,.78); }
+.preset-profit-row.is-disabled{
+  opacity:.58;
+}
+.preset-profit-row.is-disabled .preset-profit-name{
+  color:rgba(231,238,252,.48);
+}
 textarea{ resize:vertical; font-size:12px; white-space:pre; }
 input:focus, textarea:focus{ border-color:rgba(10,191,127,.7); box-shadow:0 0 0 3px rgba(10,191,127,.12); }
 

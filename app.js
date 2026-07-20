@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "20260716-163446";
+  const BUILD_VERSION = "20260720-105243";
 
   const SUPABASE_URL = "https://dyfycrmltqosezmsufup.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -612,6 +612,7 @@
     const autoWrap = document.getElementById("presetProfitAutoScaleWrap");
     if (autoChk) autoChk.checked = !!presetProfitAutoScale?.enabled;
     if (autoWrap) autoWrap.style.display = presetProfitAutoScale?.enabled ? "block" : "none";
+    updatePresetProfitScaleUiState();
     for (let i = 1; i <= 5; i++) {
       const r = presetProfitAutoScale?.rules?.[i - 1] || DEFAULT_PRESET_PROFIT_AUTO_SCALE.rules[i - 1];
       const chk = document.getElementById(`chkPresetProfitAutoRule${i}`);
@@ -657,6 +658,20 @@
       };
     });
     return base;
+  }
+
+  function updatePresetProfitScaleUiState() {
+    const scaleEl = document.getElementById("inpPresetProfitScalePct");
+    const rowEl = document.getElementById("presetProfitScaleRow");
+    const hintEl = document.getElementById("presetProfitScaleHint");
+    const autoEnabled = !!presetProfitAutoScale?.enabled;
+    if (scaleEl) scaleEl.disabled = autoEnabled;
+    if (rowEl) rowEl.classList.toggle("is-disabled", autoEnabled);
+    if (hintEl) {
+      hintEl.textContent = autoEnabled
+        ? "자동배율적용이 켜져 있어서 전체 배율은 적용되지 않습니다."
+        : "예: 200% = 2배, 50% = 절반";
+    }
   }
 
   function readPresetProfitAutoScaleFromUi() {
@@ -719,6 +734,7 @@
       autoChk.addEventListener("change", () => {
         presetProfitAutoScale = readPresetProfitAutoScaleFromUi();
         if (autoWrap) autoWrap.style.display = presetProfitAutoScale.enabled ? "block" : "none";
+        updatePresetProfitScaleUiState();
         scheduleCloudSave();
       });
     }
