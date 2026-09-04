@@ -2,3 +2,6 @@ node_modules/
 .DS_Store
 Thumbs.db
 참고/
+
+CoinBreakerAHK/profiles/*.json
+CoinBreakerAHK/tools/*.out.txt
