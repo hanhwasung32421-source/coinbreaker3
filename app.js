@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 3일 - 1";
+  const BUILD_VERSION = "2026년 9월 8일 - 1";
 
   const SUPABASE_URL = "https://dyfycrmltqosezmsufup.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -63,6 +63,7 @@
     bgZoom: document.getElementById("inpBgZoom"),
     bgShiftX: document.getElementById("inpBgShiftX"),
     bgShiftY: document.getElementById("inpBgShiftY"),
+    cardRadius: document.getElementById("inpCardRadius"),
     count: document.getElementById("inpCount"),
     prefix: document.getElementById("inpPrefix"),
 
@@ -122,6 +123,7 @@
   let lastCroppedPreviewUrl = null;
   let bgShiftX = 0;
   let bgShiftY = 0;
+  let cardRadiusPx = 0;
   let overlayState = {
     src: "",
     opacity: 0.5,
@@ -910,7 +912,7 @@
         count: toVal(els.count),
         prefix: toVal(els.prefix),
       },
-      bg: { shiftX: bgShiftX, shiftY: bgShiftY },
+      bg: { shiftX: bgShiftX, shiftY: bgShiftY, radius: cardRadiusPx },
       overlay: {
         src: String(overlayState?.src || ""),
         opacity: clamp(overlayState?.opacity ?? 0.5, 0, 1),
@@ -965,6 +967,9 @@
         bgShiftX = sx;
         bgShiftY = sy;
       }
+      cardRadiusPx = typeof state.bg.radius === "number" && Number.isFinite(state.bg.radius)
+        ? clamp(state.bg.radius, 0, 60)
+        : 0;
     }
     if (state.overlay && typeof state.overlay === "object") {
       overlayState = {
@@ -1019,6 +1024,7 @@
     fillCropUiFromCfg();
     fillPresetProfitUiFromCfg();
     syncBgShiftInputs();
+    syncCardRadiusInput();
     syncOverlayUi();
     applyOverlayToDom();
 
@@ -1180,6 +1186,10 @@
     if (els.bgShiftY) els.bgShiftY.value = String(Math.round(bgShiftY));
   }
 
+  function syncCardRadiusInput() {
+    if (els.cardRadius) els.cardRadius.value = String(Math.round(cardRadiusPx));
+  }
+
   function applyOverlayToDom() {
     const imgOverlay = document.getElementById("imgOverlay");
     if (!imgOverlay) return;
@@ -1220,6 +1230,9 @@
     els.cardRoot.style.backgroundSize = `${sizePct.toFixed(3)}% auto`;
     // 기본적으로 중심(50% 50%)을 기준으로 shift 값만큼 이동
     els.cardRoot.style.backgroundPosition = `calc(50% + ${Math.round(bgShiftX)}px) calc(50% + ${Math.round(bgShiftY)}px)`;
+    // 모서리를 라운드로 두면 캡처 시 둥근 모서리 바깥이 배경 없이(흰색으로) 보일 수 있어
+    // 기본값은 0(직각)이며, 사용자가 원하면 컨트롤 화면에서 조절할 수 있습니다.
+    els.cardRoot.style.borderRadius = `${Math.max(0, Math.round(cardRadiusPx))}px`;
   }
 
   function setSide(value, { shouldSave = true } = {}) {
@@ -1880,6 +1893,7 @@
         if (els.prefix) els.prefix.value = DEFAULTS.prefix;
         bgShiftX = 0;
         bgShiftY = 0;
+        cardRadiusPx = 0;
         setSide(DEFAULTS.side, { shouldSave: false });
         generatedItems = [];
         previewIndex = -1;
@@ -1888,6 +1902,7 @@
         sampleEntry = null;
         lastEntryBase = null;
         syncBgShiftInputs();
+        syncCardRadiusInput();
         renderAll();
         scheduleCloudSave();
       });
@@ -1932,6 +1947,13 @@
     if (els.bgShiftY) {
       els.bgShiftY.addEventListener("input", () => {
         bgShiftY = Number.isFinite(Number(els.bgShiftY.value)) ? Math.round(Number(els.bgShiftY.value)) : 0;
+        renderAll();
+        scheduleCloudSave();
+      });
+    }
+    if (els.cardRadius) {
+      els.cardRadius.addEventListener("input", () => {
+        cardRadiusPx = clamp(Number(els.cardRadius.value) || 0, 0, 60);
         renderAll();
         scheduleCloudSave();
       });
@@ -2746,6 +2768,7 @@
     bind();
     bindSideUi();
     syncBgShiftInputs();
+    syncCardRadiusInput();
     bindClickToNavTargets();
     bindOverlayControls();
     cloudReady = false;
