@@ -637,7 +637,7 @@ button.secondary{ background:#0c1220; }
           >maker</a
         >
       </div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 11일 - 2</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 11일 - 3</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -788,11 +788,32 @@ button.secondary{ background:#0c1220; }
           <details class="phrase-settings">
             <summary>프리셋 축하 문구 설정</summary>
             <div class="phrase-help">
-              `프리셋축하` 버튼을 누르면 아래 목록 중 1개가 랜덤으로 나옵니다. 줄을 추가하거나 지우면 자동 저장됩니다.
+              `프리셋축하` 버튼을 누르면 문구1~4가 각각 확률에 따라 등장 여부가 결정되어 순서대로 이어붙습니다. (100%=항상, 50%=반반) 수정하면 자동 저장됩니다.
             </div>
             <div class="phrase-grid">
-              <label class="span-2">축하 문구 목록
-                <textarea id="inpCongratsLines" rows="8" spellcheck="false"></textarea>
+              <label class="span-2">문구1
+                <textarea id="inpCongratsPhrase1" rows="6" spellcheck="false"></textarea>
+              </label>
+              <label>문구1 확률(%)
+                <input id="inpCongratsPhrase1Prob" type="number" min="0" max="100" step="1" value="100" />
+              </label>
+              <label class="span-2">문구2
+                <textarea id="inpCongratsPhrase2" rows="4" spellcheck="false"></textarea>
+              </label>
+              <label>문구2 확률(%)
+                <input id="inpCongratsPhrase2Prob" type="number" min="0" max="100" step="1" value="0" />
+              </label>
+              <label class="span-2">문구3
+                <textarea id="inpCongratsPhrase3" rows="4" spellcheck="false"></textarea>
+              </label>
+              <label>문구3 확률(%)
+                <input id="inpCongratsPhrase3Prob" type="number" min="0" max="100" step="1" value="0" />
+              </label>
+              <label class="span-2">문구4
+                <textarea id="inpCongratsPhrase4" rows="4" spellcheck="false"></textarea>
+              </label>
+              <label>문구4 확률(%)
+                <input id="inpCongratsPhrase4Prob" type="number" min="0" max="100" step="1" value="0" />
               </label>
             </div>
           </details>
@@ -1024,6 +1045,6 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="./app.js?v=2026년 9월 11일 - 2"></script>
+    <script src="./app.js?v=2026년 9월 11일 - 3"></script>
   </body>
 </html>

@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 11일 - 2";
+  const BUILD_VERSION = "2026년 9월 11일 - 3";
 
   const SUPABASE_URL = "https://dyfycrmltqosezmsufup.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -92,7 +92,14 @@
     phrase3Prob: document.getElementById("inpPhrase3Prob"),
     phrase4: document.getElementById("inpPhrase4"),
     phrase4Prob: document.getElementById("inpPhrase4Prob"),
-    congratsLines: document.getElementById("inpCongratsLines"),
+    congratsPhrase1: document.getElementById("inpCongratsPhrase1"),
+    congratsPhrase1Prob: document.getElementById("inpCongratsPhrase1Prob"),
+    congratsPhrase2: document.getElementById("inpCongratsPhrase2"),
+    congratsPhrase2Prob: document.getElementById("inpCongratsPhrase2Prob"),
+    congratsPhrase3: document.getElementById("inpCongratsPhrase3"),
+    congratsPhrase3Prob: document.getElementById("inpCongratsPhrase3Prob"),
+    congratsPhrase4: document.getElementById("inpCongratsPhrase4"),
+    congratsPhrase4Prob: document.getElementById("inpCongratsPhrase4Prob"),
     presetCongratsBtn: document.getElementById("btnPresetCongrats"),
     presetCongratsCaption: document.getElementById("presetCongratsCaption"),
 
@@ -154,7 +161,8 @@
     phrase4Prob: 0,
   };
   const DEFAULT_CONGRATS_CFG = {
-    lines: [
+    // 문구1~4는 각각 독립적인 확률로 등장 여부가 결정되어 순서대로 이어붙습니다. (100%=항상, 50%=반반)
+    phrase1: [
       "축하합니다~",
       "수익 축하합니다",
       "수익 축하해요",
@@ -162,6 +170,13 @@
       "모두들 수익 축하합니다.",
       "축하드립니다.",
     ],
+    phrase1Prob: 100,
+    phrase2: [],
+    phrase2Prob: 0,
+    phrase3: [],
+    phrase3Prob: 0,
+    phrase4: [],
+    phrase4Prob: 0,
   };
   const DEFAULT_ENTRY_VARIATION_CFG = {
     decimalPlace: 2,
@@ -589,15 +604,6 @@
     return (arr || []).map((x) => String(x ?? "")).join("\n");
   }
 
-  function linesToTextList(text, fallbackArr) {
-    const lines = String(text ?? "")
-      .replace(/\r\n/g, "\n")
-      .split("\n")
-      .map((x) => String(x ?? "").trim())
-      .filter(Boolean);
-    return lines.length ? lines : Array.isArray(fallbackArr) ? fallbackArr.slice() : [];
-  }
-
   function fillPhraseUiFromCfg() {
     if (els.phraseFmt) els.phraseFmt.value = cfgArrayToText(phraseCfg.fmt);
     if (els.phraseUnit) els.phraseUnit.value = cfgArrayToText(phraseCfg.unit);
@@ -610,7 +616,14 @@
     if (els.phrase3Prob) els.phrase3Prob.value = String(clamp(phraseCfg.phrase3Prob, 0, 100));
     if (els.phrase4) els.phrase4.value = cfgArrayToText(phraseCfg.phrase4);
     if (els.phrase4Prob) els.phrase4Prob.value = String(clamp(phraseCfg.phrase4Prob, 0, 100));
-    if (els.congratsLines) els.congratsLines.value = cfgArrayToText(congratsCfg.lines);
+    if (els.congratsPhrase1) els.congratsPhrase1.value = cfgArrayToText(congratsCfg.phrase1);
+    if (els.congratsPhrase1Prob) els.congratsPhrase1Prob.value = String(clamp(congratsCfg.phrase1Prob, 0, 100));
+    if (els.congratsPhrase2) els.congratsPhrase2.value = cfgArrayToText(congratsCfg.phrase2);
+    if (els.congratsPhrase2Prob) els.congratsPhrase2Prob.value = String(clamp(congratsCfg.phrase2Prob, 0, 100));
+    if (els.congratsPhrase3) els.congratsPhrase3.value = cfgArrayToText(congratsCfg.phrase3);
+    if (els.congratsPhrase3Prob) els.congratsPhrase3Prob.value = String(clamp(congratsCfg.phrase3Prob, 0, 100));
+    if (els.congratsPhrase4) els.congratsPhrase4.value = cfgArrayToText(congratsCfg.phrase4);
+    if (els.congratsPhrase4Prob) els.congratsPhrase4Prob.value = String(clamp(congratsCfg.phrase4Prob, 0, 100));
   }
 
   function readPhraseCfgFromUi() {
@@ -631,7 +644,14 @@
 
   function readCongratsCfgFromUi() {
     return {
-      lines: linesToTextList(els.congratsLines?.value, DEFAULT_CONGRATS_CFG.lines),
+      phrase1: linesToWeightedArray(els.congratsPhrase1?.value, DEFAULT_CONGRATS_CFG.phrase1),
+      phrase1Prob: clamp(els.congratsPhrase1Prob?.value, 0, 100),
+      phrase2: linesToWeightedArray(els.congratsPhrase2?.value, DEFAULT_CONGRATS_CFG.phrase2),
+      phrase2Prob: clamp(els.congratsPhrase2Prob?.value, 0, 100),
+      phrase3: linesToWeightedArray(els.congratsPhrase3?.value, DEFAULT_CONGRATS_CFG.phrase3),
+      phrase3Prob: clamp(els.congratsPhrase3Prob?.value, 0, 100),
+      phrase4: linesToWeightedArray(els.congratsPhrase4?.value, DEFAULT_CONGRATS_CFG.phrase4),
+      phrase4Prob: clamp(els.congratsPhrase4Prob?.value, 0, 100),
     };
   }
 
@@ -896,8 +916,17 @@
   }
 
   function makeCongratsPhrase() {
-    const list = Array.isArray(congratsCfg?.lines) ? congratsCfg.lines : DEFAULT_CONGRATS_CFG.lines;
-    return pickFrom(list, "축하합니다~");
+    const cfg = congratsCfg || DEFAULT_CONGRATS_CFG;
+    const parts = [];
+    const p1 = pickPhraseSlot(cfg.phrase1, cfg.phrase1Prob);
+    if (p1) parts.push(p1);
+    const p2 = pickPhraseSlot(cfg.phrase2, cfg.phrase2Prob);
+    if (p2) parts.push(p2);
+    const p3 = pickPhraseSlot(cfg.phrase3, cfg.phrase3Prob);
+    if (p3) parts.push(p3);
+    const p4 = pickPhraseSlot(cfg.phrase4, cfg.phrase4Prob);
+    if (p4) parts.push(p4);
+    return parts.join(" ").trim();
   }
 
   function collectState() {
@@ -1010,10 +1039,20 @@
       };
     }
     if (state.congratsCfg && typeof state.congratsCfg === "object") {
+      const cgc = state.congratsCfg;
+      // 마이그레이션: 이전 버전의 단일 목록(lines)을 문구1로 그대로 이어받습니다.
+      const legacyLines = Array.isArray(cgc.lines) && cgc.lines.length
+        ? cgc.lines.map((x) => String(x ?? "").trim()).filter(Boolean)
+        : null;
       congratsCfg = {
-        lines: Array.isArray(state.congratsCfg.lines) && state.congratsCfg.lines.length
-          ? state.congratsCfg.lines.map((x) => String(x ?? "").trim()).filter(Boolean)
-          : DEFAULT_CONGRATS_CFG.lines.slice(),
+        phrase1: Array.isArray(cgc.phrase1) ? cgc.phrase1 : legacyLines || DEFAULT_CONGRATS_CFG.phrase1,
+        phrase1Prob: clamp(cgc.phrase1Prob ?? DEFAULT_CONGRATS_CFG.phrase1Prob, 0, 100),
+        phrase2: Array.isArray(cgc.phrase2) ? cgc.phrase2 : DEFAULT_CONGRATS_CFG.phrase2,
+        phrase2Prob: clamp(cgc.phrase2Prob ?? DEFAULT_CONGRATS_CFG.phrase2Prob, 0, 100),
+        phrase3: Array.isArray(cgc.phrase3) ? cgc.phrase3 : DEFAULT_CONGRATS_CFG.phrase3,
+        phrase3Prob: clamp(cgc.phrase3Prob ?? DEFAULT_CONGRATS_CFG.phrase3Prob, 0, 100),
+        phrase4: Array.isArray(cgc.phrase4) ? cgc.phrase4 : DEFAULT_CONGRATS_CFG.phrase4,
+        phrase4Prob: clamp(cgc.phrase4Prob ?? DEFAULT_CONGRATS_CFG.phrase4Prob, 0, 100),
       };
     } else {
       congratsCfg = JSON.parse(JSON.stringify(DEFAULT_CONGRATS_CFG));
@@ -1791,10 +1830,16 @@
       congratsCfg = readCongratsCfgFromUi();
       scheduleCloudSave();
     };
-    if (els.congratsLines) {
-      els.congratsLines.addEventListener("input", onCongratsEdit);
-      els.congratsLines.addEventListener("change", onCongratsEdit);
-    }
+    [
+      els.congratsPhrase1, els.congratsPhrase1Prob,
+      els.congratsPhrase2, els.congratsPhrase2Prob,
+      els.congratsPhrase3, els.congratsPhrase3Prob,
+      els.congratsPhrase4, els.congratsPhrase4Prob,
+    ].forEach((el) => {
+      if (!el) return;
+      el.addEventListener("input", onCongratsEdit);
+      el.addEventListener("change", onCongratsEdit);
+    });
   }
 
   function bindEntryVariationUi() {
