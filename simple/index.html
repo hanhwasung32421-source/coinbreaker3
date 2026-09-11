@@ -597,7 +597,7 @@ button.secondary{ background:#0c1220; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Coin Breaker</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 8일 - 2</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 11일 - 2</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -708,14 +708,32 @@ button.secondary{ background:#0c1220; }
               <label class="span-2">2) 단위
                 <textarea id="inpPhraseUnit" rows="3" spellcheck="false"></textarea>
               </label>
-              <label class="span-2">3) 기본 마무리 문구
-                <textarea id="inpPhrasePart3" rows="4" spellcheck="false"></textarea>
+              <label>숫자(포맷+단위) 나올 확률(%)
+                <input id="inpPhraseNumberProb" type="number" min="0" max="100" step="1" value="100" />
               </label>
-              <label class="span-2">4) 추가 마무리 문구
-                <textarea id="inpPhrasePart4" rows="4" spellcheck="false"></textarea>
+              <label class="span-2">문구1
+                <textarea id="inpPhrase1" rows="4" spellcheck="false"></textarea>
               </label>
-              <label>4) 추가 문구 붙는 확률(%)
-                <input id="inpPhrasePart4Prob" type="number" min="0" max="100" step="1" value="25" />
+              <label>문구1 확률(%)
+                <input id="inpPhrase1Prob" type="number" min="0" max="100" step="1" value="100" />
+              </label>
+              <label class="span-2">문구2
+                <textarea id="inpPhrase2" rows="4" spellcheck="false"></textarea>
+              </label>
+              <label>문구2 확률(%)
+                <input id="inpPhrase2Prob" type="number" min="0" max="100" step="1" value="25" />
+              </label>
+              <label class="span-2">문구3
+                <textarea id="inpPhrase3" rows="4" spellcheck="false"></textarea>
+              </label>
+              <label>문구3 확률(%)
+                <input id="inpPhrase3Prob" type="number" min="0" max="100" step="1" value="0" />
+              </label>
+              <label class="span-2">문구4
+                <textarea id="inpPhrase4" rows="4" spellcheck="false"></textarea>
+              </label>
+              <label>문구4 확률(%)
+                <input id="inpPhrase4Prob" type="number" min="0" max="100" step="1" value="0" />
               </label>
             </div>
           </details>
@@ -865,6 +883,6 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 8일 - 2"></script>
+    <script src="../app.js?v=2026년 9월 11일 - 2"></script>
   </body>
 </html>

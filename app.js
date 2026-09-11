@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 8일 - 2";
+  const BUILD_VERSION = "2026년 9월 11일 - 2";
 
   const SUPABASE_URL = "https://dyfycrmltqosezmsufup.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -83,9 +83,15 @@
 
     phraseFmt: document.getElementById("inpPhraseFmt"),
     phraseUnit: document.getElementById("inpPhraseUnit"),
-    phrasePart3: document.getElementById("inpPhrasePart3"),
-    phrasePart4: document.getElementById("inpPhrasePart4"),
-    phrasePart4Prob: document.getElementById("inpPhrasePart4Prob"),
+    phraseNumberProb: document.getElementById("inpPhraseNumberProb"),
+    phrase1: document.getElementById("inpPhrase1"),
+    phrase1Prob: document.getElementById("inpPhrase1Prob"),
+    phrase2: document.getElementById("inpPhrase2"),
+    phrase2Prob: document.getElementById("inpPhrase2Prob"),
+    phrase3: document.getElementById("inpPhrase3"),
+    phrase3Prob: document.getElementById("inpPhrase3Prob"),
+    phrase4: document.getElementById("inpPhrase4"),
+    phrase4Prob: document.getElementById("inpPhrase4Prob"),
     congratsLines: document.getElementById("inpCongratsLines"),
     presetCongratsBtn: document.getElementById("btnPresetCongrats"),
     presetCongratsCaption: document.getElementById("presetCongratsCaption"),
@@ -135,12 +141,17 @@
   const DEFAULT_PHRASE_CFG = {
     fmt: ["int", "2", "1"],
     unit: ["%", "프로", "퍼", ""],
-    part3: ["감사합니다", "감사합니다", "고맙습니다", "고맙습니다", "수익입니다"],
-    // 프리셋 1~10은 "4) 추가 마무리 문구" 항목 수가 10개 미만이면 동작을 막습니다.
-    // 기본 상태에서도 프리셋이 바로 동작하도록, 빈칸 포함 10개로 기본값을 채웁니다.
-    // (빈칸은 "추가 문구가 안 붙는" 효과)
-    part4: ["", "", "", "", "", "", "", "대표님.", "대단하십니다.", "대박입니다."],
-    part4Prob: 25,
+    // 숫자(포맷)+단위는 항상 쌍으로 붙거나 안 붙습니다. numberProb%로 등장 여부를 결정합니다.
+    numberProb: 100,
+    // 문구1~4는 각각 독립적인 확률로 등장 여부가 결정됩니다. (100%=항상, 50%=반반)
+    phrase1: ["감사합니다", "감사합니다", "고맙습니다", "고맙습니다", "수익입니다"],
+    phrase1Prob: 100,
+    phrase2: ["", "", "", "", "", "", "", "대표님.", "대단하십니다.", "대박입니다."],
+    phrase2Prob: 25,
+    phrase3: [],
+    phrase3Prob: 0,
+    phrase4: [],
+    phrase4Prob: 0,
   };
   const DEFAULT_CONGRATS_CFG = {
     lines: [
@@ -199,8 +210,6 @@
   let presetProfitCfg = JSON.parse(JSON.stringify(DEFAULT_PRESET_PROFIT_CFG));
   let presetProfitScalePct = DEFAULT_PRESET_PROFIT_SCALE_PCT;
   let presetProfitAutoScale = JSON.parse(JSON.stringify(DEFAULT_PRESET_PROFIT_AUTO_SCALE));
-  let presetPart4Assignment = null;
-  let presetPart4PoolKey = "";
   let lastPresetRetryCtx = null;
   let presetRetryArmed = false;
 
@@ -592,9 +601,15 @@
   function fillPhraseUiFromCfg() {
     if (els.phraseFmt) els.phraseFmt.value = cfgArrayToText(phraseCfg.fmt);
     if (els.phraseUnit) els.phraseUnit.value = cfgArrayToText(phraseCfg.unit);
-    if (els.phrasePart3) els.phrasePart3.value = cfgArrayToText(phraseCfg.part3);
-    if (els.phrasePart4) els.phrasePart4.value = cfgArrayToText(phraseCfg.part4);
-    if (els.phrasePart4Prob) els.phrasePart4Prob.value = String(clamp(phraseCfg.part4Prob, 0, 100));
+    if (els.phraseNumberProb) els.phraseNumberProb.value = String(clamp(phraseCfg.numberProb, 0, 100));
+    if (els.phrase1) els.phrase1.value = cfgArrayToText(phraseCfg.phrase1);
+    if (els.phrase1Prob) els.phrase1Prob.value = String(clamp(phraseCfg.phrase1Prob, 0, 100));
+    if (els.phrase2) els.phrase2.value = cfgArrayToText(phraseCfg.phrase2);
+    if (els.phrase2Prob) els.phrase2Prob.value = String(clamp(phraseCfg.phrase2Prob, 0, 100));
+    if (els.phrase3) els.phrase3.value = cfgArrayToText(phraseCfg.phrase3);
+    if (els.phrase3Prob) els.phrase3Prob.value = String(clamp(phraseCfg.phrase3Prob, 0, 100));
+    if (els.phrase4) els.phrase4.value = cfgArrayToText(phraseCfg.phrase4);
+    if (els.phrase4Prob) els.phrase4Prob.value = String(clamp(phraseCfg.phrase4Prob, 0, 100));
     if (els.congratsLines) els.congratsLines.value = cfgArrayToText(congratsCfg.lines);
   }
 
@@ -602,9 +617,15 @@
     return {
       fmt: linesToWeightedArray(els.phraseFmt?.value, DEFAULT_PHRASE_CFG.fmt),
       unit: linesToWeightedArray(els.phraseUnit?.value, DEFAULT_PHRASE_CFG.unit),
-      part3: linesToWeightedArray(els.phrasePart3?.value, DEFAULT_PHRASE_CFG.part3),
-      part4: linesToWeightedArray(els.phrasePart4?.value, DEFAULT_PHRASE_CFG.part4),
-      part4Prob: clamp(els.phrasePart4Prob?.value, 0, 100),
+      numberProb: clamp(els.phraseNumberProb?.value, 0, 100),
+      phrase1: linesToWeightedArray(els.phrase1?.value, DEFAULT_PHRASE_CFG.phrase1),
+      phrase1Prob: clamp(els.phrase1Prob?.value, 0, 100),
+      phrase2: linesToWeightedArray(els.phrase2?.value, DEFAULT_PHRASE_CFG.phrase2),
+      phrase2Prob: clamp(els.phrase2Prob?.value, 0, 100),
+      phrase3: linesToWeightedArray(els.phrase3?.value, DEFAULT_PHRASE_CFG.phrase3),
+      phrase3Prob: clamp(els.phrase3Prob?.value, 0, 100),
+      phrase4: linesToWeightedArray(els.phrase4?.value, DEFAULT_PHRASE_CFG.phrase4),
+      phrase4Prob: clamp(els.phrase4Prob?.value, 0, 100),
     };
   }
 
@@ -834,56 +855,44 @@
     fillPresetProfitUiFromCfg();
   }
 
-  function getPart4ListAll(cfg) {
-    const arr = Array.isArray(cfg?.part4) ? cfg.part4 : [];
-    return arr.map((v) => String(v ?? "").trim());
+  // list의 각 문구는 독립적으로 probPct% 확률에 당첨될 때만 등장합니다.
+  // (당첨되면 그 안에서 가중치 랜덤으로 한 줄을 고릅니다.)
+  function pickPhraseSlot(list, probPct) {
+    if (!Array.isArray(list) || list.length === 0) return "";
+    if (Math.random() >= clamp(probPct, 0, 100) / 100) return "";
+    return pickFrom(list, "");
   }
 
-  function shuffleInPlace(a) {
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  }
-
-  function ensurePresetPart4Assignment(cfg) {
-    const list = getPart4ListAll(cfg);
-    const key = list.join("\u0001");
-    if (presetPart4Assignment && presetPart4PoolKey === key && presetPart4Assignment.length === 10) return presetPart4Assignment;
-    if (list.length < 10) {
-      presetPart4Assignment = null;
-      presetPart4PoolKey = key;
-      return null;
-    }
-    presetPart4Assignment = shuffleInPlace(list.slice()).slice(0, 10);
-    presetPart4PoolKey = key;
-    return presetPart4Assignment;
-  }
-
-  function makePresetPhrase(percentValue, presetId) {
+  function makePresetPhrase(percentValue) {
     const cfg = phraseCfg || DEFAULT_PHRASE_CFG;
-    const fmt = pickFrom(cfg.fmt, "int");
-    const absP = Math.abs(Number(percentValue) || 0);
-    let numText = "";
-    if (fmt === "int") numText = String(Math.floor(absP));
-    else if (fmt === "1") numText = (Math.floor(absP * 10) / 10).toFixed(1);
-    else numText = (Math.floor(absP * 100) / 100).toFixed(2);
-    if (numText.includes(".")) {
-      numText = numText.replace(/0+$/, "").replace(/\.$/, "");
+    const parts = [];
+
+    // 숫자(포맷)+단위는 항상 한 쌍으로만 등장하거나 등장하지 않습니다.
+    if (Math.random() < clamp(cfg.numberProb, 0, 100) / 100) {
+      const fmt = pickFrom(cfg.fmt, "int");
+      const absP = Math.abs(Number(percentValue) || 0);
+      let numText = "";
+      if (fmt === "int") numText = String(Math.floor(absP));
+      else if (fmt === "1") numText = (Math.floor(absP * 10) / 10).toFixed(1);
+      else numText = (Math.floor(absP * 100) / 100).toFixed(2);
+      if (numText.includes(".")) {
+        numText = numText.replace(/0+$/, "").replace(/\.$/, "");
+      }
+      const unit = pickFrom(cfg.unit, "%");
+      const numPart = `${numText}${unit}`.trim();
+      if (numPart) parts.push(numPart);
     }
 
-    const unit = pickFrom(cfg.unit, "%");
-    const part3 = pickFrom(cfg.part3, "감사합니다");
-    let part4 = "";
-    if (presetId != null) {
-      const assign = ensurePresetPart4Assignment(cfg);
-      const idx = Math.max(0, Math.min(9, Number(presetId) - 1));
-      part4 = assign ? String(assign[idx] ?? "").trim() : "";
-    } else if (Math.random() < clamp(cfg.part4Prob, 0, 100) / 100) {
-      part4 = pickFrom(cfg.part4, "");
-    }
-    return `${`${numText}${unit}`.trim()} ${part4 ? `${part3} ${part4}` : part3}`.trim();
+    const p1 = pickPhraseSlot(cfg.phrase1, cfg.phrase1Prob);
+    if (p1) parts.push(p1);
+    const p2 = pickPhraseSlot(cfg.phrase2, cfg.phrase2Prob);
+    if (p2) parts.push(p2);
+    const p3 = pickPhraseSlot(cfg.phrase3, cfg.phrase3Prob);
+    if (p3) parts.push(p3);
+    const p4 = pickPhraseSlot(cfg.phrase4, cfg.phrase4Prob);
+    if (p4) parts.push(p4);
+
+    return parts.join(" ").trim();
   }
 
   function makeCongratsPhrase() {
@@ -982,12 +991,22 @@
     }
     if (state.phraseCfg && typeof state.phraseCfg === "object") {
       const pc = state.phraseCfg;
+      // 마이그레이션: 이전 버전의 "3) 기본 마무리 문구"/"4) 추가 마무리 문구"를
+      // 문구1/문구2로 그대로 이어받습니다.
+      const legacyPhrase1 = Array.isArray(pc.part3) ? pc.part3 : null;
+      const legacyPhrase2 = Array.isArray(pc.part4) ? pc.part4 : null;
       phraseCfg = {
         fmt: Array.isArray(pc.fmt) ? pc.fmt : DEFAULT_PHRASE_CFG.fmt,
         unit: Array.isArray(pc.unit) ? pc.unit : DEFAULT_PHRASE_CFG.unit,
-        part3: Array.isArray(pc.part3) ? pc.part3 : DEFAULT_PHRASE_CFG.part3,
-        part4: Array.isArray(pc.part4) ? pc.part4 : DEFAULT_PHRASE_CFG.part4,
-        part4Prob: clamp(pc.part4Prob, 0, 100),
+        numberProb: clamp(pc.numberProb ?? DEFAULT_PHRASE_CFG.numberProb, 0, 100),
+        phrase1: Array.isArray(pc.phrase1) ? pc.phrase1 : legacyPhrase1 || DEFAULT_PHRASE_CFG.phrase1,
+        phrase1Prob: clamp(pc.phrase1Prob ?? DEFAULT_PHRASE_CFG.phrase1Prob, 0, 100),
+        phrase2: Array.isArray(pc.phrase2) ? pc.phrase2 : legacyPhrase2 || DEFAULT_PHRASE_CFG.phrase2,
+        phrase2Prob: clamp(pc.phrase2Prob ?? pc.part4Prob ?? DEFAULT_PHRASE_CFG.phrase2Prob, 0, 100),
+        phrase3: Array.isArray(pc.phrase3) ? pc.phrase3 : DEFAULT_PHRASE_CFG.phrase3,
+        phrase3Prob: clamp(pc.phrase3Prob ?? DEFAULT_PHRASE_CFG.phrase3Prob, 0, 100),
+        phrase4: Array.isArray(pc.phrase4) ? pc.phrase4 : DEFAULT_PHRASE_CFG.phrase4,
+        phrase4Prob: clamp(pc.phrase4Prob ?? DEFAULT_PHRASE_CFG.phrase4Prob, 0, 100),
       };
     }
     if (state.congratsCfg && typeof state.congratsCfg === "object") {
@@ -1055,8 +1074,6 @@
     samplePercent = null;
     sampleProfit = null;
     sampleEntry = null;
-    presetPart4Assignment = null;
-    presetPart4PoolKey = "";
     renderAll();
   }
 
@@ -1756,11 +1773,15 @@
     fillPhraseUiFromCfg();
     const onEdit = () => {
       phraseCfg = readPhraseCfgFromUi();
-      presetPart4Assignment = null;
-      presetPart4PoolKey = "";
       scheduleCloudSave();
     };
-    [els.phraseFmt, els.phraseUnit, els.phrasePart3, els.phrasePart4, els.phrasePart4Prob].forEach((el) => {
+    [
+      els.phraseFmt, els.phraseUnit, els.phraseNumberProb,
+      els.phrase1, els.phrase1Prob,
+      els.phrase2, els.phrase2Prob,
+      els.phrase3, els.phrase3Prob,
+      els.phrase4, els.phrase4Prob,
+    ].forEach((el) => {
       if (!el) return;
       el.addEventListener("input", onEdit);
       el.addEventListener("change", onEdit);
@@ -1963,13 +1984,6 @@
     document.querySelectorAll(".preset-btn[data-preset]").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const presetId = btn.getAttribute("data-preset");
-        const part4List = getPart4ListAll(phraseCfg || DEFAULT_PHRASE_CFG);
-        if (part4List.length < 10) {
-          showToastFor(`4) 추가 마무리 문구 항목이 10개 미만입니다. (현재 ${part4List.length}개)`, 2500);
-          return;
-        }
-        ensurePresetPart4Assignment(phraseCfg || DEFAULT_PHRASE_CFG);
-
         const pmin = btn.getAttribute("data-pmin");
         const pmax = btn.getAttribute("data-pmax");
         if (els.profitMin && pmin != null) els.profitMin.value = String(pmin);
@@ -1993,7 +2007,7 @@
         const percentForPhrase = generatedItems?.[0]?.percent ?? samplePercent ?? 0;
         let phrase = "";
         for (let i = 0; i < 30; i++) {
-          phrase = makePresetPhrase(percentForPhrase, presetId);
+          phrase = makePresetPhrase(percentForPhrase);
           if (phrase && phrase !== lastPresetPhrase) break;
         }
         lastPresetPhrase = phrase;
