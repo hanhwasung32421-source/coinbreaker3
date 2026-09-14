@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 11일 - 3";
+  const BUILD_VERSION = "2026년 9월 14일 - 2";
 
   const SUPABASE_URL = "https://dyfycrmltqosezmsufup.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -877,15 +877,57 @@
 
   // list의 각 문구는 독립적으로 probPct% 확률에 당첨될 때만 등장합니다.
   // (당첨되면 그 안에서 가중치 랜덤으로 한 줄을 고릅니다.)
-  function pickPhraseSlot(list, probPct) {
+  function pickPhraseSlot(list, probPct, picker) {
     if (!Array.isArray(list) || list.length === 0) return "";
     if (Math.random() >= clamp(probPct, 0, 100) / 100) return "";
-    return pickFrom(list, "");
+    return (picker || pickFrom)(list, "");
+  }
+
+  function shuffleInPlace(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // 문구3 전용 "셔플 백" 규칙: 확률에 당첨되어 실제로 문구3이 뽑힐 때,
+  // 순수 랜덤이 아니라 "한 바퀴(목록 전체)를 다 소진할 때까지 같은 문구가
+  // 다시 나오지 않는" 순서로 뽑습니다. 한 바퀴를 다 돌면 다시 셔플해서
+  // 새 바퀴를 시작합니다. (가중치 `문구|N`는 그 문구가 한 바퀴 안에서
+  // N번 자리를 차지하는 방식으로 반영됩니다.)
+  let phrase3Bag = [];
+  let phrase3BagPoolKey = "";
+  let phrase3PendingDraw = null;
+  function drawFromPhrase3Bag(list, fallback = "") {
+    if (!Array.isArray(list) || list.length === 0) return fallback;
+    const key = list.join("\n");
+    if (phrase3BagPoolKey !== key || phrase3Bag.length === 0) {
+      phrase3Bag = shuffleInPlace(list.slice());
+      phrase3BagPoolKey = key;
+    }
+    const item = phrase3Bag.length ? phrase3Bag.pop() : fallback;
+    phrase3PendingDraw = item || null;
+    return item || fallback;
+  }
+
+  // 프리셋 버튼 클릭 시 "직전과 같은 문구면 재시도" 로직 때문에 이번 시도가
+  // 채택되지 않고 버려질 수 있습니다. 그때 방금 문구3 백에서 뽑은 항목을
+  // 되돌려주지 않으면 그 항목이 아무 데도 보이지 않은 채 소진되어 한 바퀴
+  // 공정성이 깨집니다. 맨 끝이 아니라 무작위 위치로 되돌려서, 바로 다음
+  // 뽑기에서 같은 항목이 곧장 다시 나오는 것도 방지합니다.
+  function undoPendingPhrase3Draw() {
+    if (phrase3PendingDraw) {
+      const insertAt = Math.floor(Math.random() * (phrase3Bag.length + 1));
+      phrase3Bag.splice(insertAt, 0, phrase3PendingDraw);
+      phrase3PendingDraw = null;
+    }
   }
 
   function makePresetPhrase(percentValue) {
     const cfg = phraseCfg || DEFAULT_PHRASE_CFG;
     const parts = [];
+    phrase3PendingDraw = null;
 
     // 숫자(포맷)+단위는 항상 한 쌍으로만 등장하거나 등장하지 않습니다.
     if (Math.random() < clamp(cfg.numberProb, 0, 100) / 100) {
@@ -907,7 +949,7 @@
     if (p1) parts.push(p1);
     const p2 = pickPhraseSlot(cfg.phrase2, cfg.phrase2Prob);
     if (p2) parts.push(p2);
-    const p3 = pickPhraseSlot(cfg.phrase3, cfg.phrase3Prob);
+    const p3 = pickPhraseSlot(cfg.phrase3, cfg.phrase3Prob, drawFromPhrase3Bag);
     if (p3) parts.push(p3);
     const p4 = pickPhraseSlot(cfg.phrase4, cfg.phrase4Prob);
     if (p4) parts.push(p4);
@@ -2054,6 +2096,7 @@
         for (let i = 0; i < 30; i++) {
           phrase = makePresetPhrase(percentForPhrase);
           if (phrase && phrase !== lastPresetPhrase) break;
+          undoPendingPhrase3Draw();
         }
         lastPresetPhrase = phrase;
         const caption = document.querySelector(`.preset-caption[data-preset="${presetId}"]`);
