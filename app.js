@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 16일 - 8";
+  const BUILD_VERSION = "2026년 9월 16일 - 9";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -234,7 +234,7 @@
       "y": -9,
       "size": 372,
       "color": "#1a2831",
-      "weight": 2,
+      "weight": 9,
       "opacity": 0.65
     },
     ".dgb-close-btn": {
@@ -2961,45 +2961,53 @@
             el.style.removeProperty("--profit-divider-rgb");
           }
         }
-        if (selector === ".dgb-close-btn") {
-          if (styleData.size) {
-            const px = Math.max(18, Math.min(80, Math.round(Number(styleData.size) || 0)));
-            el.style.width = px + "px";
-            el.style.height = px + "px";
-            const svg = el.querySelector("svg");
-            if (svg) {
-              const s = Math.max(10, Math.round(px * 0.55));
-              svg.setAttribute("width", String(s));
-              svg.setAttribute("height", String(s));
+        // #profitDivider / #txtSideBox는 텍스트가 아니라 장식용 박스 요소라 이미
+        // 위(또는 아래)에서 자기 전용 로직으로 size/weight/opacity/color를 전부
+        // 처리합니다. 예전에는 여기 아래 "일반 텍스트" 처리부에도 그대로
+        // 흘러들어가서 예를 들어 구분선에 font-size가 굵기(px) 값 그대로
+        // 적용되는 등, 요소 크기 관련 값이 엉뚱한 CSS 속성에 겹쳐 써지면서
+        // flex 레이아웃이 틀어져 실제 굵기가 반영되지 않는 버그가 있었습니다.
+        if (selector !== "#profitDivider" && selector !== "#txtSideBox") {
+          if (selector === ".dgb-close-btn") {
+            if (styleData.size) {
+              const px = Math.max(18, Math.min(80, Math.round(Number(styleData.size) || 0)));
+              el.style.width = px + "px";
+              el.style.height = px + "px";
+              const svg = el.querySelector("svg");
+              if (svg) {
+                const s = Math.max(10, Math.round(px * 0.55));
+                svg.setAttribute("width", String(s));
+                svg.setAttribute("height", String(s));
+              }
+            } else {
+              el.style.width = "";
+              el.style.height = "";
+              const svg = el.querySelector("svg");
+              if (svg) {
+                svg.removeAttribute("width");
+                svg.removeAttribute("height");
+              }
             }
+            el.style.fontSize = "";
           } else {
-            el.style.width = "";
-            el.style.height = "";
-            const svg = el.querySelector("svg");
-            if (svg) {
-              svg.removeAttribute("width");
-              svg.removeAttribute("height");
-            }
+            if (styleData.size) el.style.fontSize = styleData.size + "px";
+            else el.style.fontSize = "";
           }
-          el.style.fontSize = "";
-        } else {
-          if (styleData.size) el.style.fontSize = styleData.size + "px";
-          else el.style.fontSize = "";
-        }
-        if (styleData.weight) el.style.fontWeight = styleData.weight;
-        else el.style.fontWeight = "";
-        if (styleData.color) el.style.color = styleData.color;
-        else el.style.color = "";
-        if (styleData.font && styleData.font !== "inherit") el.style.fontFamily = styleData.font;
-        else el.style.fontFamily = "";
-        if (styleData.tracking != null && styleData.tracking !== "") el.style.letterSpacing = `${Number(styleData.tracking)}px`;
-        else el.style.letterSpacing = "";
-        if (selector !== "#txtSide") {
-          if (styleData.opacity != null && styleData.opacity !== "") el.style.opacity = String(styleData.opacity);
-          else el.style.opacity = "";
-        } else {
-          // 롱/숏은 박스 투명도를 별도 변수로 제어(텍스트는 고정)
-          el.style.opacity = "";
+          if (styleData.weight) el.style.fontWeight = styleData.weight;
+          else el.style.fontWeight = "";
+          if (styleData.color) el.style.color = styleData.color;
+          else el.style.color = "";
+          if (styleData.font && styleData.font !== "inherit") el.style.fontFamily = styleData.font;
+          else el.style.fontFamily = "";
+          if (styleData.tracking != null && styleData.tracking !== "") el.style.letterSpacing = `${Number(styleData.tracking)}px`;
+          else el.style.letterSpacing = "";
+          if (selector !== "#txtSide") {
+            if (styleData.opacity != null && styleData.opacity !== "") el.style.opacity = String(styleData.opacity);
+            else el.style.opacity = "";
+          } else {
+            // 롱/숏은 박스 투명도를 별도 변수로 제어(텍스트는 고정)
+            el.style.opacity = "";
+          }
         }
 
         // LONG/SHORT 뱃지 박스(크기/굵기/투명도/색상)
