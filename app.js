@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 16일 - 4";
+  const BUILD_VERSION = "2026년 9월 16일 - 5";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -86,20 +86,28 @@
     phraseNumberProb: document.getElementById("inpPhraseNumberProb"),
     phrase1: document.getElementById("inpPhrase1"),
     phrase1Prob: document.getElementById("inpPhrase1Prob"),
+    phrase1NoRepeat: document.getElementById("chkPhrase1NoRepeat"),
     phrase2: document.getElementById("inpPhrase2"),
     phrase2Prob: document.getElementById("inpPhrase2Prob"),
+    phrase2NoRepeat: document.getElementById("chkPhrase2NoRepeat"),
     phrase3: document.getElementById("inpPhrase3"),
     phrase3Prob: document.getElementById("inpPhrase3Prob"),
+    phrase3NoRepeat: document.getElementById("chkPhrase3NoRepeat"),
     phrase4: document.getElementById("inpPhrase4"),
     phrase4Prob: document.getElementById("inpPhrase4Prob"),
+    phrase4NoRepeat: document.getElementById("chkPhrase4NoRepeat"),
     congratsPhrase1: document.getElementById("inpCongratsPhrase1"),
     congratsPhrase1Prob: document.getElementById("inpCongratsPhrase1Prob"),
+    congratsPhrase1NoRepeat: document.getElementById("chkCongratsPhrase1NoRepeat"),
     congratsPhrase2: document.getElementById("inpCongratsPhrase2"),
     congratsPhrase2Prob: document.getElementById("inpCongratsPhrase2Prob"),
+    congratsPhrase2NoRepeat: document.getElementById("chkCongratsPhrase2NoRepeat"),
     congratsPhrase3: document.getElementById("inpCongratsPhrase3"),
     congratsPhrase3Prob: document.getElementById("inpCongratsPhrase3Prob"),
+    congratsPhrase3NoRepeat: document.getElementById("chkCongratsPhrase3NoRepeat"),
     congratsPhrase4: document.getElementById("inpCongratsPhrase4"),
     congratsPhrase4Prob: document.getElementById("inpCongratsPhrase4Prob"),
+    congratsPhrase4NoRepeat: document.getElementById("chkCongratsPhrase4NoRepeat"),
     presetCongratsBtn: document.getElementById("btnPresetCongrats"),
     presetCongratsCaption: document.getElementById("presetCongratsCaption"),
 
@@ -151,14 +159,20 @@
     // 숫자(포맷)+단위는 항상 쌍으로 붙거나 안 붙습니다. numberProb%로 등장 여부를 결정합니다.
     numberProb: 100,
     // 문구1~4는 각각 독립적인 확률로 등장 여부가 결정됩니다. (100%=항상, 50%=반반)
+    // phraseNNoRepeat: 체크하면 해당 슬롯은 전체 목록을 한 바퀴 다 쓸 때까지
+    // 같은 문구가 다시 나오지 않는 "안 겹치게 순환" 규칙이 적용됩니다.
     phrase1: ["감사합니다", "감사합니다", "고맙습니다", "고맙습니다", "수익입니다"],
     phrase1Prob: 100,
+    phrase1NoRepeat: false,
     phrase2: ["", "", "", "", "", "", "", "대표님.", "대단하십니다.", "대박입니다."],
     phrase2Prob: 25,
+    phrase2NoRepeat: false,
     phrase3: [],
     phrase3Prob: 0,
+    phrase3NoRepeat: true,
     phrase4: [],
     phrase4Prob: 0,
+    phrase4NoRepeat: false,
   };
   const DEFAULT_CONGRATS_CFG = {
     // 문구1~4는 각각 독립적인 확률로 등장 여부가 결정되어 순서대로 이어붙습니다. (100%=항상, 50%=반반)
@@ -171,12 +185,16 @@
       "축하드립니다.",
     ],
     phrase1Prob: 100,
+    phrase1NoRepeat: false,
     phrase2: [],
     phrase2Prob: 0,
+    phrase2NoRepeat: false,
     phrase3: [],
     phrase3Prob: 0,
+    phrase3NoRepeat: false,
     phrase4: [],
     phrase4Prob: 0,
+    phrase4NoRepeat: false,
   };
   const DEFAULT_ENTRY_VARIATION_CFG = {
     decimalPlace: 2,
@@ -610,20 +628,28 @@
     if (els.phraseNumberProb) els.phraseNumberProb.value = String(clamp(phraseCfg.numberProb, 0, 100));
     if (els.phrase1) els.phrase1.value = cfgArrayToText(phraseCfg.phrase1);
     if (els.phrase1Prob) els.phrase1Prob.value = String(clamp(phraseCfg.phrase1Prob, 0, 100));
+    if (els.phrase1NoRepeat) els.phrase1NoRepeat.checked = !!phraseCfg.phrase1NoRepeat;
     if (els.phrase2) els.phrase2.value = cfgArrayToText(phraseCfg.phrase2);
     if (els.phrase2Prob) els.phrase2Prob.value = String(clamp(phraseCfg.phrase2Prob, 0, 100));
+    if (els.phrase2NoRepeat) els.phrase2NoRepeat.checked = !!phraseCfg.phrase2NoRepeat;
     if (els.phrase3) els.phrase3.value = cfgArrayToText(phraseCfg.phrase3);
     if (els.phrase3Prob) els.phrase3Prob.value = String(clamp(phraseCfg.phrase3Prob, 0, 100));
+    if (els.phrase3NoRepeat) els.phrase3NoRepeat.checked = !!phraseCfg.phrase3NoRepeat;
     if (els.phrase4) els.phrase4.value = cfgArrayToText(phraseCfg.phrase4);
     if (els.phrase4Prob) els.phrase4Prob.value = String(clamp(phraseCfg.phrase4Prob, 0, 100));
+    if (els.phrase4NoRepeat) els.phrase4NoRepeat.checked = !!phraseCfg.phrase4NoRepeat;
     if (els.congratsPhrase1) els.congratsPhrase1.value = cfgArrayToText(congratsCfg.phrase1);
     if (els.congratsPhrase1Prob) els.congratsPhrase1Prob.value = String(clamp(congratsCfg.phrase1Prob, 0, 100));
+    if (els.congratsPhrase1NoRepeat) els.congratsPhrase1NoRepeat.checked = !!congratsCfg.phrase1NoRepeat;
     if (els.congratsPhrase2) els.congratsPhrase2.value = cfgArrayToText(congratsCfg.phrase2);
     if (els.congratsPhrase2Prob) els.congratsPhrase2Prob.value = String(clamp(congratsCfg.phrase2Prob, 0, 100));
+    if (els.congratsPhrase2NoRepeat) els.congratsPhrase2NoRepeat.checked = !!congratsCfg.phrase2NoRepeat;
     if (els.congratsPhrase3) els.congratsPhrase3.value = cfgArrayToText(congratsCfg.phrase3);
     if (els.congratsPhrase3Prob) els.congratsPhrase3Prob.value = String(clamp(congratsCfg.phrase3Prob, 0, 100));
+    if (els.congratsPhrase3NoRepeat) els.congratsPhrase3NoRepeat.checked = !!congratsCfg.phrase3NoRepeat;
     if (els.congratsPhrase4) els.congratsPhrase4.value = cfgArrayToText(congratsCfg.phrase4);
     if (els.congratsPhrase4Prob) els.congratsPhrase4Prob.value = String(clamp(congratsCfg.phrase4Prob, 0, 100));
+    if (els.congratsPhrase4NoRepeat) els.congratsPhrase4NoRepeat.checked = !!congratsCfg.phrase4NoRepeat;
   }
 
   function readPhraseCfgFromUi() {
@@ -633,12 +659,16 @@
       numberProb: clamp(els.phraseNumberProb?.value, 0, 100),
       phrase1: linesToWeightedArray(els.phrase1?.value, DEFAULT_PHRASE_CFG.phrase1),
       phrase1Prob: clamp(els.phrase1Prob?.value, 0, 100),
+      phrase1NoRepeat: !!els.phrase1NoRepeat?.checked,
       phrase2: linesToWeightedArray(els.phrase2?.value, DEFAULT_PHRASE_CFG.phrase2),
       phrase2Prob: clamp(els.phrase2Prob?.value, 0, 100),
+      phrase2NoRepeat: !!els.phrase2NoRepeat?.checked,
       phrase3: linesToWeightedArray(els.phrase3?.value, DEFAULT_PHRASE_CFG.phrase3),
       phrase3Prob: clamp(els.phrase3Prob?.value, 0, 100),
+      phrase3NoRepeat: !!els.phrase3NoRepeat?.checked,
       phrase4: linesToWeightedArray(els.phrase4?.value, DEFAULT_PHRASE_CFG.phrase4),
       phrase4Prob: clamp(els.phrase4Prob?.value, 0, 100),
+      phrase4NoRepeat: !!els.phrase4NoRepeat?.checked,
     };
   }
 
@@ -646,12 +676,16 @@
     return {
       phrase1: linesToWeightedArray(els.congratsPhrase1?.value, DEFAULT_CONGRATS_CFG.phrase1),
       phrase1Prob: clamp(els.congratsPhrase1Prob?.value, 0, 100),
+      phrase1NoRepeat: !!els.congratsPhrase1NoRepeat?.checked,
       phrase2: linesToWeightedArray(els.congratsPhrase2?.value, DEFAULT_CONGRATS_CFG.phrase2),
       phrase2Prob: clamp(els.congratsPhrase2Prob?.value, 0, 100),
+      phrase2NoRepeat: !!els.congratsPhrase2NoRepeat?.checked,
       phrase3: linesToWeightedArray(els.congratsPhrase3?.value, DEFAULT_CONGRATS_CFG.phrase3),
       phrase3Prob: clamp(els.congratsPhrase3Prob?.value, 0, 100),
+      phrase3NoRepeat: !!els.congratsPhrase3NoRepeat?.checked,
       phrase4: linesToWeightedArray(els.congratsPhrase4?.value, DEFAULT_CONGRATS_CFG.phrase4),
       phrase4Prob: clamp(els.congratsPhrase4Prob?.value, 0, 100),
+      phrase4NoRepeat: !!els.congratsPhrase4NoRepeat?.checked,
     };
   }
 
@@ -891,43 +925,58 @@
     return a;
   }
 
-  // 문구3 전용 "셔플 백" 규칙: 확률에 당첨되어 실제로 문구3이 뽑힐 때,
-  // 순수 랜덤이 아니라 "한 바퀴(목록 전체)를 다 소진할 때까지 같은 문구가
-  // 다시 나오지 않는" 순서로 뽑습니다. 한 바퀴를 다 돌면 다시 셔플해서
-  // 새 바퀴를 시작합니다. (가중치 `문구|N`는 그 문구가 한 바퀴 안에서
-  // N번 자리를 차지하는 방식으로 반영됩니다.)
-  let phrase3Bag = [];
-  let phrase3BagPoolKey = "";
-  let phrase3PendingDraw = null;
-  function drawFromPhrase3Bag(list, fallback = "") {
+  // "안 겹치게 순환" 특별규칙: 체크된 문구 슬롯은 순수 랜덤이 아니라, 목록
+  // 전체를 셔플해서 한 바퀴(전체 항목)를 다 소진할 때까지 같은 문구가 다시
+  // 나오지 않는 순서로 뽑습니다. 한 바퀴를 다 돌면 다시 셔플해서 새 바퀴를
+  // 시작합니다. (가중치 `문구|N`는 그 문구가 한 바퀴 안에서 N번 자리를
+  // 차지하는 방식으로 반영됩니다.) bagKey로 프리셋 문구/축하 문구 및 슬롯
+  // 번호별로 서로 독립된 순환을 유지합니다.
+  const noRepeatBags = new Map(); // bagKey -> { items: string[], poolKey: string }
+  let pendingBagDraws = [];       // 이번 문구 생성 시도에서 뽑은 항목들(재시도 시 되돌리기용)
+
+  function drawNoRepeat(bagKey, list, fallback = "") {
     if (!Array.isArray(list) || list.length === 0) return fallback;
-    const key = list.join("\n");
-    if (phrase3BagPoolKey !== key || phrase3Bag.length === 0) {
-      phrase3Bag = shuffleInPlace(list.slice());
-      phrase3BagPoolKey = key;
+    const poolKey = list.join("\n");
+    let bag = noRepeatBags.get(bagKey);
+    if (!bag || bag.poolKey !== poolKey || bag.items.length === 0) {
+      bag = { items: shuffleInPlace(list.slice()), poolKey };
+      noRepeatBags.set(bagKey, bag);
     }
-    const item = phrase3Bag.length ? phrase3Bag.pop() : fallback;
-    phrase3PendingDraw = item || null;
+    const item = bag.items.length ? bag.items.pop() : fallback;
+    if (item) pendingBagDraws.push({ bagKey, item });
     return item || fallback;
   }
 
-  // 프리셋 버튼 클릭 시 "직전과 같은 문구면 재시도" 로직 때문에 이번 시도가
-  // 채택되지 않고 버려질 수 있습니다. 그때 방금 문구3 백에서 뽑은 항목을
-  // 되돌려주지 않으면 그 항목이 아무 데도 보이지 않은 채 소진되어 한 바퀴
-  // 공정성이 깨집니다. 맨 끝이 아니라 무작위 위치로 되돌려서, 바로 다음
-  // 뽑기에서 같은 항목이 곧장 다시 나오는 것도 방지합니다.
-  function undoPendingPhrase3Draw() {
-    if (phrase3PendingDraw) {
-      const insertAt = Math.floor(Math.random() * (phrase3Bag.length + 1));
-      phrase3Bag.splice(insertAt, 0, phrase3PendingDraw);
-      phrase3PendingDraw = null;
-    }
+  // 프리셋/축하 버튼 클릭 시 "직전과 같은 문구면 재시도" 로직 때문에 이번
+  // 시도가 채택되지 않고 버려질 수 있습니다. 그때 이번 시도에서 뽑았던 백
+  // 항목들을 전부 되돌려주지 않으면 그 항목들이 아무 데도 보이지 않은 채
+  // 소진되어 한 바퀴 공정성이 깨집니다. 맨 끝이 아니라 무작위 위치로
+  // 되돌려서, 바로 다음 뽑기에서 같은 항목이 곧장 다시 나오는 것도
+  // 방지합니다.
+  function undoPendingBagDraws() {
+    pendingBagDraws.forEach(({ bagKey, item }) => {
+      const bag = noRepeatBags.get(bagKey);
+      if (bag) {
+        const insertAt = Math.floor(Math.random() * (bag.items.length + 1));
+        bag.items.splice(insertAt, 0, item);
+      }
+    });
+    pendingBagDraws = [];
+  }
+
+  // cfg의 phraseN / phraseNProb / phraseNNoRepeat 세 필드를 조합해 한 슬롯을 뽑습니다.
+  function pickCfgSlot(cfg, slotKey, bagPrefix) {
+    const list = cfg[slotKey];
+    const prob = cfg[`${slotKey}Prob`];
+    const noRepeat = !!cfg[`${slotKey}NoRepeat`];
+    const picker = noRepeat ? (l, f) => drawNoRepeat(`${bagPrefix}:${slotKey}`, l, f) : undefined;
+    return pickPhraseSlot(list, prob, picker);
   }
 
   function makePresetPhrase(percentValue) {
     const cfg = phraseCfg || DEFAULT_PHRASE_CFG;
     const parts = [];
-    phrase3PendingDraw = null;
+    pendingBagDraws = [];
 
     // 숫자(포맷)+단위는 항상 한 쌍으로만 등장하거나 등장하지 않습니다.
     if (Math.random() < clamp(cfg.numberProb, 0, 100) / 100) {
@@ -945,13 +994,13 @@
       if (numPart) parts.push(numPart);
     }
 
-    const p1 = pickPhraseSlot(cfg.phrase1, cfg.phrase1Prob);
+    const p1 = pickCfgSlot(cfg, "phrase1", "preset");
     if (p1) parts.push(p1);
-    const p2 = pickPhraseSlot(cfg.phrase2, cfg.phrase2Prob);
+    const p2 = pickCfgSlot(cfg, "phrase2", "preset");
     if (p2) parts.push(p2);
-    const p3 = pickPhraseSlot(cfg.phrase3, cfg.phrase3Prob, drawFromPhrase3Bag);
+    const p3 = pickCfgSlot(cfg, "phrase3", "preset");
     if (p3) parts.push(p3);
-    const p4 = pickPhraseSlot(cfg.phrase4, cfg.phrase4Prob);
+    const p4 = pickCfgSlot(cfg, "phrase4", "preset");
     if (p4) parts.push(p4);
 
     return parts.join(" ").trim();
@@ -960,13 +1009,14 @@
   function makeCongratsPhrase() {
     const cfg = congratsCfg || DEFAULT_CONGRATS_CFG;
     const parts = [];
-    const p1 = pickPhraseSlot(cfg.phrase1, cfg.phrase1Prob);
+    pendingBagDraws = [];
+    const p1 = pickCfgSlot(cfg, "phrase1", "congrats");
     if (p1) parts.push(p1);
-    const p2 = pickPhraseSlot(cfg.phrase2, cfg.phrase2Prob);
+    const p2 = pickCfgSlot(cfg, "phrase2", "congrats");
     if (p2) parts.push(p2);
-    const p3 = pickPhraseSlot(cfg.phrase3, cfg.phrase3Prob);
+    const p3 = pickCfgSlot(cfg, "phrase3", "congrats");
     if (p3) parts.push(p3);
-    const p4 = pickPhraseSlot(cfg.phrase4, cfg.phrase4Prob);
+    const p4 = pickCfgSlot(cfg, "phrase4", "congrats");
     if (p4) parts.push(p4);
     return parts.join(" ").trim();
   }
@@ -1072,12 +1122,16 @@
         numberProb: clamp(pc.numberProb ?? DEFAULT_PHRASE_CFG.numberProb, 0, 100),
         phrase1: Array.isArray(pc.phrase1) ? pc.phrase1 : legacyPhrase1 || DEFAULT_PHRASE_CFG.phrase1,
         phrase1Prob: clamp(pc.phrase1Prob ?? DEFAULT_PHRASE_CFG.phrase1Prob, 0, 100),
+        phrase1NoRepeat: pc.phrase1NoRepeat ?? DEFAULT_PHRASE_CFG.phrase1NoRepeat,
         phrase2: Array.isArray(pc.phrase2) ? pc.phrase2 : legacyPhrase2 || DEFAULT_PHRASE_CFG.phrase2,
         phrase2Prob: clamp(pc.phrase2Prob ?? pc.part4Prob ?? DEFAULT_PHRASE_CFG.phrase2Prob, 0, 100),
+        phrase2NoRepeat: pc.phrase2NoRepeat ?? DEFAULT_PHRASE_CFG.phrase2NoRepeat,
         phrase3: Array.isArray(pc.phrase3) ? pc.phrase3 : DEFAULT_PHRASE_CFG.phrase3,
         phrase3Prob: clamp(pc.phrase3Prob ?? DEFAULT_PHRASE_CFG.phrase3Prob, 0, 100),
+        phrase3NoRepeat: pc.phrase3NoRepeat ?? DEFAULT_PHRASE_CFG.phrase3NoRepeat,
         phrase4: Array.isArray(pc.phrase4) ? pc.phrase4 : DEFAULT_PHRASE_CFG.phrase4,
         phrase4Prob: clamp(pc.phrase4Prob ?? DEFAULT_PHRASE_CFG.phrase4Prob, 0, 100),
+        phrase4NoRepeat: pc.phrase4NoRepeat ?? DEFAULT_PHRASE_CFG.phrase4NoRepeat,
       };
     }
     if (state.congratsCfg && typeof state.congratsCfg === "object") {
@@ -1089,12 +1143,16 @@
       congratsCfg = {
         phrase1: Array.isArray(cgc.phrase1) ? cgc.phrase1 : legacyLines || DEFAULT_CONGRATS_CFG.phrase1,
         phrase1Prob: clamp(cgc.phrase1Prob ?? DEFAULT_CONGRATS_CFG.phrase1Prob, 0, 100),
+        phrase1NoRepeat: cgc.phrase1NoRepeat ?? DEFAULT_CONGRATS_CFG.phrase1NoRepeat,
         phrase2: Array.isArray(cgc.phrase2) ? cgc.phrase2 : DEFAULT_CONGRATS_CFG.phrase2,
         phrase2Prob: clamp(cgc.phrase2Prob ?? DEFAULT_CONGRATS_CFG.phrase2Prob, 0, 100),
+        phrase2NoRepeat: cgc.phrase2NoRepeat ?? DEFAULT_CONGRATS_CFG.phrase2NoRepeat,
         phrase3: Array.isArray(cgc.phrase3) ? cgc.phrase3 : DEFAULT_CONGRATS_CFG.phrase3,
         phrase3Prob: clamp(cgc.phrase3Prob ?? DEFAULT_CONGRATS_CFG.phrase3Prob, 0, 100),
+        phrase3NoRepeat: cgc.phrase3NoRepeat ?? DEFAULT_CONGRATS_CFG.phrase3NoRepeat,
         phrase4: Array.isArray(cgc.phrase4) ? cgc.phrase4 : DEFAULT_CONGRATS_CFG.phrase4,
         phrase4Prob: clamp(cgc.phrase4Prob ?? DEFAULT_CONGRATS_CFG.phrase4Prob, 0, 100),
+        phrase4NoRepeat: cgc.phrase4NoRepeat ?? DEFAULT_CONGRATS_CFG.phrase4NoRepeat,
       };
     } else {
       congratsCfg = JSON.parse(JSON.stringify(DEFAULT_CONGRATS_CFG));
@@ -1877,10 +1935,10 @@
     };
     [
       els.phraseFmt, els.phraseUnit, els.phraseNumberProb,
-      els.phrase1, els.phrase1Prob,
-      els.phrase2, els.phrase2Prob,
-      els.phrase3, els.phrase3Prob,
-      els.phrase4, els.phrase4Prob,
+      els.phrase1, els.phrase1Prob, els.phrase1NoRepeat,
+      els.phrase2, els.phrase2Prob, els.phrase2NoRepeat,
+      els.phrase3, els.phrase3Prob, els.phrase3NoRepeat,
+      els.phrase4, els.phrase4Prob, els.phrase4NoRepeat,
     ].forEach((el) => {
       if (!el) return;
       el.addEventListener("input", onEdit);
@@ -1892,10 +1950,10 @@
       scheduleCloudSave();
     };
     [
-      els.congratsPhrase1, els.congratsPhrase1Prob,
-      els.congratsPhrase2, els.congratsPhrase2Prob,
-      els.congratsPhrase3, els.congratsPhrase3Prob,
-      els.congratsPhrase4, els.congratsPhrase4Prob,
+      els.congratsPhrase1, els.congratsPhrase1Prob, els.congratsPhrase1NoRepeat,
+      els.congratsPhrase2, els.congratsPhrase2Prob, els.congratsPhrase2NoRepeat,
+      els.congratsPhrase3, els.congratsPhrase3Prob, els.congratsPhrase3NoRepeat,
+      els.congratsPhrase4, els.congratsPhrase4Prob, els.congratsPhrase4NoRepeat,
     ].forEach((el) => {
       if (!el) return;
       el.addEventListener("input", onCongratsEdit);
@@ -2116,7 +2174,7 @@
         for (let i = 0; i < 30; i++) {
           phrase = makePresetPhrase(percentForPhrase);
           if (phrase && phrase !== lastPresetPhrase) break;
-          undoPendingPhrase3Draw();
+          undoPendingBagDraws();
         }
         lastPresetPhrase = phrase;
         const caption = document.querySelector(`.preset-caption[data-preset="${presetId}"]`);
@@ -2159,6 +2217,7 @@
         for (let i = 0; i < 20; i++) {
           phrase = makeCongratsPhrase();
           if (phrase && phrase !== lastCongratsPhrase) break;
+          undoPendingBagDraws();
         }
         lastCongratsPhrase = phrase;
         if (els.presetCongratsCaption) {
