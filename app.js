@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 16일 - 6";
+  const BUILD_VERSION = "2026년 9월 16일 - 7";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -26,14 +26,14 @@
   const LS_ENTRY_TS = "coinbreaker_entry_ts";
 
   const DEFAULTS = {
-    percentMin: "20",
-    percentMax: "25",
+    percentMin: "26",
+    percentMax: "30",
     profitMin: "300",
-    profitMax: "1000",
-    symbol: "DOGE/USDT",
+    profitMax: "400",
+    symbol: "SAMSUNGUSDT",
     side: "LONG",
     leverage: "100x",
-    entry: "0.11445",
+    entry: "184.95",
     bgZoom: 1.0,
     count: 1,
     prefix: "screenshot",
@@ -120,7 +120,197 @@
     txtExit: document.getElementById("txtExit"),
   };
 
-  let cardCustomStyles = {};
+  // 카드 각 요소의 위치/크기/색상 등 커스텀 스타일 기본값입니다. Supabase 데이터가
+  // 통째로 사라지는 사고가 반복되어(2026-09-16), 실제 운영 중이던 상태를 그대로
+  // 코드 기본값으로 박아 넣어 복구 시 처음부터 다시 세팅할 필요가 없게 했습니다.
+  const DEFAULT_CARD_CUSTOM_STYLES = {
+    "#txtExit": {
+      "x": 4,
+      "y": -25,
+      "font": "inherit",
+      "size": null,
+      "color": null,
+      "weight": null,
+      "opacity": null,
+      "tracking": 0,
+      "badgeSize": null,
+      "badgeBorder": null
+    },
+    "#txtSide": {
+      "x": 14,
+      "y": -29,
+      "font": "inherit",
+      "size": 19,
+      "text": null,
+      "color": null,
+      "weight": null,
+      "opacity": null,
+      "badgeSize": null,
+      "badgeBorder": null
+    },
+    "#txtEntry": {
+      "x": 4,
+      "y": -24,
+      "font": "inherit",
+      "size": null,
+      "color": null,
+      "weight": null,
+      "opacity": null,
+      "tracking": 0.5,
+      "badgeSize": null,
+      "badgeBorder": null
+    },
+    "#txtProfit": {
+      "x": 2,
+      "y": 1,
+      "font": "inherit",
+      "size": 20,
+      "color": null,
+      "weight": null,
+      "opacity": null,
+      "tracking": 0,
+      "badgeSize": null,
+      "badgeBorder": null
+    },
+    "#txtSymbol": {
+      "x": 2,
+      "y": -29,
+      "font": "inherit",
+      "size": null,
+      "text": null,
+      "color": null,
+      "weight": null,
+      "opacity": null,
+      "badgeSize": null,
+      "badgeBorder": null
+    },
+    ".dgb-title": {
+      "x": 1,
+      "y": -7,
+      "font": "inherit",
+      "size": null,
+      "text": null,
+      "color": null,
+      "weight": null,
+      "opacity": null,
+      "badgeSize": null,
+      "badgeBorder": null
+    },
+    "#txtPercent": {
+      "x": 2,
+      "y": -1,
+      "font": "inherit",
+      "size": null,
+      "color": null,
+      "weight": null,
+      "opacity": null,
+      "tracking": 0.7,
+      "badgeSize": null,
+      "badgeBorder": null
+    },
+    "#txtSideBox": {
+      "x": 0,
+      "y": 0,
+      "size": 39,
+      "color": "#192831",
+      "height": 39,
+      "weight": 1,
+      "opacity": 0.9
+    },
+    "#txtLeverage": {
+      "x": 2,
+      "y": -23,
+      "font": "inherit",
+      "size": null,
+      "text": null,
+      "color": null,
+      "weight": null,
+      "opacity": null,
+      "badgeSize": null,
+      "badgeBorder": null
+    },
+    "#profitDivider": {
+      "x": 0,
+      "y": -9,
+      "size": 372,
+      "color": "#1a2831",
+      "weight": 2,
+      "opacity": 0.65
+    },
+    ".dgb-close-btn": {
+      "x": 2,
+      "y": -7,
+      "font": "inherit",
+      "size": 18,
+      "text": null,
+      "color": null,
+      "weight": null,
+      "opacity": null,
+      "badgeSize": null,
+      "badgeBorder": null
+    },
+    "#txtPercentSign": {
+      "x": 4,
+      "y": 0,
+      "font": "inherit",
+      "size": null,
+      "text": null,
+      "color": null,
+      "weight": null,
+      "opacity": null,
+      "badgeSize": null,
+      "badgeBorder": null
+    },
+    ".dgb-grid-item:nth-child(1) .dgb-grid-label": {
+      "x": 2,
+      "y": -41,
+      "font": "inherit",
+      "size": null,
+      "text": null,
+      "color": null,
+      "weight": null,
+      "opacity": null,
+      "badgeSize": null,
+      "badgeBorder": null
+    },
+    ".dgb-grid-item:nth-child(2) .dgb-grid-label": {
+      "x": 1,
+      "y": -28,
+      "font": "inherit",
+      "size": null,
+      "text": null,
+      "color": null,
+      "weight": null,
+      "opacity": null,
+      "badgeSize": null,
+      "badgeBorder": null
+    },
+    ".dgb-grid-item:nth-child(3) .dgb-grid-label": {
+      "x": 1,
+      "y": -29,
+      "font": "inherit",
+      "size": null,
+      "text": null,
+      "color": null,
+      "weight": null,
+      "opacity": null,
+      "badgeSize": null,
+      "badgeBorder": null
+    },
+    ".dgb-grid-item:nth-child(4) .dgb-grid-label": {
+      "x": 1,
+      "y": -30,
+      "font": "inherit",
+      "size": null,
+      "text": null,
+      "color": null,
+      "weight": null,
+      "opacity": null,
+      "badgeSize": null,
+      "badgeBorder": null
+    }
+  };
+  let cardCustomStyles = JSON.parse(JSON.stringify(DEFAULT_CARD_CUSTOM_STYLES));
 
   const sideUi = {
     longBtn: document.getElementById("btnSideLong"),
@@ -153,92 +343,276 @@
     y: 0,
   };
 
+  // 문구1~4는 각각 독립적인 확률로 등장 여부가 결정됩니다. (100%=항상, 50%=반반)
+  // phraseNNoRepeat: 체크하면 해당 슬롯은 전체 목록을 한 바퀴 다 쓸 때까지 같은
+  // 문구가 다시 나오지 않는 "안 겹치게 순환" 규칙이 적용됩니다. (2026-09-16 기준
+  // 실제 운영 중이던 값을 그대로 기본값으로 반영 -- Supabase 데이터가 사라져도
+  // 이 상태로 복구되도록.)
   const DEFAULT_PHRASE_CFG = {
-    fmt: ["int", "2", "1"],
-    unit: ["%", "프로", "퍼", ""],
-    // 숫자(포맷)+단위는 항상 쌍으로 붙거나 안 붙습니다. numberProb%로 등장 여부를 결정합니다.
-    numberProb: 100,
-    // 문구1~4는 각각 독립적인 확률로 등장 여부가 결정됩니다. (100%=항상, 50%=반반)
-    // phraseNNoRepeat: 체크하면 해당 슬롯은 전체 목록을 한 바퀴 다 쓸 때까지
-    // 같은 문구가 다시 나오지 않는 "안 겹치게 순환" 규칙이 적용됩니다.
-    phrase1: ["감사합니다", "감사합니다", "고맙습니다", "고맙습니다", "수익입니다"],
-    phrase1Prob: 100,
-    phrase1NoRepeat: false,
-    phrase2: ["", "", "", "", "", "", "", "대표님.", "대단하십니다.", "대박입니다."],
-    phrase2Prob: 25,
-    phrase2NoRepeat: false,
-    phrase3: [],
-    phrase3Prob: 0,
-    phrase3NoRepeat: true,
-    phrase4: [],
-    phrase4Prob: 0,
-    phrase4NoRepeat: false,
-  };
-  const DEFAULT_CONGRATS_CFG = {
-    // 문구1~4는 각각 독립적인 확률로 등장 여부가 결정되어 순서대로 이어붙습니다. (100%=항상, 50%=반반)
-    phrase1: [
-      "축하합니다~",
-      "수익 축하합니다",
-      "수익 축하해요",
-      "다들 시크가 크시네요. 수익 축하드립니다.",
-      "모두들 수익 축하합니다.",
-      "축하드립니다.",
+    "fmt": [
+      "int"
     ],
-    phrase1Prob: 100,
-    phrase1NoRepeat: false,
-    phrase2: [],
-    phrase2Prob: 0,
-    phrase2NoRepeat: false,
-    phrase3: [],
-    phrase3Prob: 0,
-    phrase3NoRepeat: false,
-    phrase4: [],
-    phrase4Prob: 0,
-    phrase4NoRepeat: false,
+    "unit": [
+      "%",
+      "%",
+      "프로",
+      "퍼"
+    ],
+    "phrase1": [
+      "",
+      ""
+    ],
+    "phrase2": [
+      "감사합니다~",
+      "감사합니다!",
+      "감사합니다",
+      "감사합니다.",
+      "고맙습니다",
+      "감사합니다.",
+      "고맙습니다!",
+      "감사합니다 대표님",
+      "실력 인정입니다.",
+      "감사합니다 정말 대단하십니다 대표님~",
+      "고맙습니다 믿고 잘 따라가겠습니다!",
+      "덕분에 수익 났습니다 감사합니다.",
+      "알려주신 대로 해서 수익 봤습니다 감사합니다~",
+      "드디어 플러스로 전환했어요 감사합니다!",
+      "오늘 수익 실현했습니다 감사합니다 대표님.",
+      "믿고 따라가길 잘한 것 같습니다 감사합니다",
+      "수익 나니까 정말 감사하네요~",
+      "덕분에 계좌 초록불입니다 감사합니다.",
+      "말씀대로 했더니 수익권입니다 감사합니다!",
+      "오랜만에 웃네요 감사합니다",
+      "실력이 진짜 대단하십니다 수익 감사합니다.",
+      "따라가길 정말 잘했습니다 감사합니다~",
+      "수익 내주셔서 감사합니다 대표님!",
+      "이번에도 적중했네요 감사합니다.",
+      "수익 인증합니다 감사합니다 대표님",
+      "감사합니다 이번에도 수익 챙겼습니다~",
+      "믿고 따라간 보람이 있네요 감사합니다.",
+      "대표님 덕분에 손실 만회했습니다 감사합니다!",
+      "수익률 보고 감탄했습니다 감사합니다",
+      "매번 결과로 보여주셔서 감사합니다.",
+      "이번 수익도 감사히 잘 받았습니다~",
+      "이번 종목 정말 감사합니다!",
+      "수익 보고 바로 댓글 남깁니다 감사합니다.",
+      "계좌 확인하고 웃었습니다 감사합니다",
+      "이렇게 결과가 좋을 줄 몰랐네요 감사합니다~",
+      "대표님 분석력 인정합니다 감사합니다.",
+      "수익률 보고 깜짝 놀랐습니다 감사합니다!",
+      "따라간 보람 확실히 느낍니다 감사합니다",
+      "이번에도 믿고 가길 잘했네요 감사합니다.",
+      "수익 챙기고 갑니다 감사합니다 대표님~",
+      "꾸준히 좋은 결과 감사합니다!",
+      "덕분에 용돈 벌었습니다 감사합니다",
+      "오늘도 수익으로 마감했습니다 감사합니다.",
+      "대표님 말씀 믿고 진행했는데 성공했습니다 감사합니다~",
+      "실력 다시 한번 느낍니다 감사합니다!",
+      "이번 수익 크게 났습니다 감사합니다",
+      "매번 신뢰가 쌓입니다 감사합니다.",
+      "수익 실현하고 인사드립니다 감사합니다~",
+      "계좌 색깔 보고 감사 인사 남깁니다!",
+      "믿고 따라간 결과 좋습니다 감사합니다.",
+      "대표님 덕분에 이번 달 성과 좋았습니다 감사합니다"
+    ],
+    "phrase3": [
+      "실력 인정입니다.",
+      "정말 대단하십니다 대표님~",
+      "믿고 잘 따라가겠습니다!",
+      "매도 타점 정말 좋네요.",
+      "플러스 전환했습니다.",
+      "대표님.",
+      "믿고 따라가길 잘한 것 같습니다",
+      "실력이 진짜 대단하십니다",
+      "따라가길 정말 잘했습니다",
+      "이번에도 적중했네요",
+      "수익 인증합니다 대표님",
+      "이번에도 잘 챙겼습니다~",
+      "믿고 따라간 보람이 있네요",
+      "대표님 덕분에 손실 만회했습니다",
+      "수익률 보고 감탄했습니다",
+      "매번 결과로 보여주셔서 감사합니다.",
+      "이번 타점 정말 감사합니다!",
+      "수익 보고 바로 인증 남깁니다.",
+      "대표님 분석력 인정합니다",
+      "따라간 보람이 있네요.",
+      "이번에도 믿고 가길 잘했네요",
+      "수익 꾸준히 챙겨주시는 대표님",
+      "오늘도 수익이군요 ㅎ",
+      "실력 다시 한번 느낍니다",
+      "이번 수익 크게 났네요",
+      "매번 신뢰가 쌓입니다",
+      "정말 타점 잘 잡으시네요.",
+      "믿고 따라간 결과가 항상 좋습니다",
+      "매도 했습니다.",
+      "이번 타점 깔끔하게 먹었네요 감사합니다.",
+      "매도 잘 마쳤습니다.",
+      "덕분에 깔끔하게 익절했습니다.",
+      "신호대로 진입해서 수익 챙겼습니다.",
+      "손실 복구 완료했습니다 감사합니다.",
+      "깔끔하게 챙기고 나옵니다.",
+      "덕분에 안정적으로 익절했습니다.",
+      "타점 정확했네요 감사해요.",
+      "알려주신 라인에서 잘 매도했습니다.",
+      "버틴 보람이 있네요.",
+      "라인 잡고 잘 나왔습니다.",
+      "깔끔한 리딩 감사합니다.",
+      "이번 진입도 성공적이었네요.",
+      "욕심 안 부리고 익절했습니다.",
+      "수익 챙기고 다음 타점 기다립니다.",
+      "알려주신 가격대에서 잘 나왔습니다.",
+      "덕분에 편안하게 매매했습니다.",
+      "안전한 익절 마무리했습니다.",
+      "오늘 장도 수익 감사합니다.",
+      "차분하게 따라가서 수익 났네요.",
+      "원칙대로 진입해서 잘 챙겼습니다.",
+      "깔끔하게 손실 메꿨습니다.",
+      "오늘도 수익 감사합니다.",
+      "무난하게 익절 완료했습니다."
+    ],
+    "phrase4": [
+      ""
+    ],
+    "numberProb": 100,
+    "phrase1Prob": 100,
+    "phrase2Prob": 100,
+    "phrase3Prob": 30,
+    "phrase4Prob": 0,
+    "phrase1NoRepeat": false,
+    "phrase2NoRepeat": false,
+    "phrase3NoRepeat": true,
+    "phrase4NoRepeat": false
+  };
+  // 문구1~4는 각각 독립적인 확률로 등장 여부가 결정되어 순서대로 이어붙습니다.
+  // (2026-09-16 기준 실제 운영 중이던 값을 그대로 기본값으로 반영)
+  const DEFAULT_CONGRATS_CFG = {
+    "phrase1": [
+      "모두",
+      "모두들",
+      "다들",
+      "",
+      ""
+    ],
+    "phrase2": [
+      "수익"
+    ],
+    "phrase3": [
+      "축하드립니다.",
+      "축하합니다.",
+      "축하드립니다",
+      "축하드립니다~!",
+      "축하합니다!",
+      "축하해요.",
+      "축하해요"
+    ],
+    "phrase4": [
+      ""
+    ],
+    "phrase1Prob": 100,
+    "phrase2Prob": 50,
+    "phrase3Prob": 100,
+    "phrase4Prob": 0,
+    "phrase1NoRepeat": false,
+    "phrase2NoRepeat": false,
+    "phrase3NoRepeat": true,
+    "phrase4NoRepeat": false
   };
   const DEFAULT_ENTRY_VARIATION_CFG = {
-    decimalPlace: 2,
-    gap: 2,
-    entryZeroProb: 50,
-    exitZeroProb: 50,
+    "gap": 0,
+    "decimalPlace": 1,
+    "exitZeroProb": 0,
+    "entryZeroProb": 0
   };
   let phraseCfg = JSON.parse(JSON.stringify(DEFAULT_PHRASE_CFG));
   let congratsCfg = JSON.parse(JSON.stringify(DEFAULT_CONGRATS_CFG));
   const DEFAULT_CROP_CFG = {
-    fullCaptureProb: 5,
-    widthMinPct: 50,
-    widthMaxPct: 100,
-    startPadXMax: 28,
-    startPadYMax: 18,
-    bottomPadMin: 12,
-    bottomPadMax: 36,
+    "widthMaxPct": 97,
+    "widthMinPct": 50,
+    "bottomPadMax": 36,
+    "bottomPadMin": 12,
+    "startPadXMax": 28,
+    "startPadYMax": 88,
+    "fullCaptureProb": 10
   };
   let cropCfg = { ...DEFAULT_CROP_CFG };
 
   const DEFAULT_PRESET_PROFIT_CFG = {
-    "1": { min: "50", max: "100" },
-    "2": { min: "100", max: "200" },
-    "3": { min: "300", max: "400" },
-    "4": { min: "300", max: "400" },
-    "5": { min: "500", max: "700" },
-    "6": { min: "1000", max: "2000" },
-    "7": { min: "1500", max: "2500" },
-    "8": { min: "2500", max: "3500" },
-    "9": { min: "3500", max: "4500" },
-    "10": { min: "5000", max: "6000" },
+    "1": {
+      "max": "400",
+      "min": "300"
+    },
+    "2": {
+      "max": "500",
+      "min": "400"
+    },
+    "3": {
+      "max": "600",
+      "min": "500"
+    },
+    "4": {
+      "max": "700",
+      "min": "600"
+    },
+    "5": {
+      "max": "900",
+      "min": "700"
+    },
+    "6": {
+      "max": "1500",
+      "min": "1000"
+    },
+    "7": {
+      "max": "2000",
+      "min": "1500"
+    },
+    "8": {
+      "max": "3000",
+      "min": "2500"
+    },
+    "9": {
+      "max": "5000",
+      "min": "4000"
+    },
+    "10": {
+      "max": "6000",
+      "min": "5000"
+    }
   };
   const DEFAULT_PRESET_PROFIT_SCALE_PCT = 100;
   const DEFAULT_PRESET_PROFIT_AUTO_SCALE = {
-    enabled: false,
-    // 규칙은 "나중에 체크한 항목은 체크가 안 되게" 하기 위해 서로 겹치지 않도록 강제합니다.
-    // 구간은 [min, max) 기준으로 판정합니다. (예: 20~30과 30~40은 허용)
-    rules: [
-      { enabled: true, minP: 20, maxP: 30, scalePct: 100 },
-      { enabled: true, minP: 30, maxP: 40, scalePct: 120 },
-      { enabled: true, minP: 40, maxP: 60, scalePct: 140 },
-      { enabled: false, minP: 60, maxP: 80, scalePct: 100 },
-      { enabled: false, minP: 80, maxP: 100, scalePct: 100 },
+    "rules": [
+      {
+        "maxP": 10,
+        "minP": 0,
+        "enabled": true,
+        "scalePct": 90
+      },
+      {
+        "maxP": 20,
+        "minP": 10,
+        "enabled": true,
+        "scalePct": 100
+      },
+      {
+        "maxP": 30,
+        "minP": 20,
+        "enabled": true,
+        "scalePct": 110
+      },
+      {
+        "maxP": 40,
+        "minP": 30,
+        "enabled": true,
+        "scalePct": 120
+      },
+      {
+        "maxP": 50,
+        "minP": 40,
+        "enabled": true,
+        "scalePct": 130
+      }
     ],
+    "enabled": true
   };
   let presetProfitCfg = JSON.parse(JSON.stringify(DEFAULT_PRESET_PROFIT_CFG));
   let presetProfitScalePct = DEFAULT_PRESET_PROFIT_SCALE_PCT;
@@ -1186,7 +1560,7 @@
     syncOverlayUi();
     applyOverlayToDom();
 
-    cardCustomStyles = state.cardCustomStyles || {};
+    cardCustomStyles = state.cardCustomStyles || JSON.parse(JSON.stringify(DEFAULT_CARD_CUSTOM_STYLES));
     // 기본 선/박스가 항상 보이도록 최소 기본값 보정
     if (!cardCustomStyles["#profitDivider"] || typeof cardCustomStyles["#profitDivider"] !== "object") {
       cardCustomStyles["#profitDivider"] = { x: 0, y: 0, size: 300, weight: 4, color: "#38bdf8", opacity: 1 };
