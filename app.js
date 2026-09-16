@@ -2,11 +2,11 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 14일 - 2";
+  const BUILD_VERSION = "2026년 9월 16일 - 2";
 
-  const SUPABASE_URL = "https://dyfycrmltqosezmsufup.supabase.co";
+  const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5Znljcm1sdHFvc2V6bXN1ZnVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMzg4MDIsImV4cCI6MjA5NTYxNDgwMn0.VpJCBdD1g8YZiaa6Zah9ZKIu3ydu_RkSgWCdEXe2QGw";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9udWRpa3VwbXlucXRpcmttbWxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0ODk0MDIsImV4cCI6MjEwNTA2NTQwMn0.HyT8vGYXwvoL0NK4Ip2VVYTZ4PtVhDWPL7_E6QnpA44";
   const SUPABASE_TABLE = "coinbreaker_state";
 
   function getSupabaseRowId() {
