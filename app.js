@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 16일 - 3";
+  const BUILD_VERSION = "2026년 9월 16일 - 4";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -1781,6 +1781,7 @@
       sampleEntry,
       lastEntryBase,
     };
+    clearDynamicValueTextOverrides();
     const baseEntry = String(els.entry?.value || "").trim();
     for (let i = 1; i <= n; i++) {
       const item = buildRenderItem(baseEntry);
@@ -1815,8 +1816,26 @@
     el.classList.add("flash-warning");
   }
 
+  // Navigator(텍스트 & 뱃지 세부 조정)의 "텍스트 내용 수정"은 비교용 원본 이미지에
+  // 맞춰 레이아웃을 잡을 때 임시로 값을 고정해서 보기 위한 용도입니다. 실제로
+  // 프리셋/생성을 누르면 수익률·수익금·진입가·종료가는 항상 수치 조정 설정대로
+  // 새로 랜덤 생성되어야 하므로, 이 값들에 남아있는 텍스트 고정을 해제합니다.
+  function clearDynamicValueTextOverrides() {
+    const dynamicSelectors = ["#txtPercent", "#txtPercentSign", "#txtProfit", "#txtEntry", "#txtExit"];
+    let changed = false;
+    dynamicSelectors.forEach((sel) => {
+      const sd = cardCustomStyles[sel];
+      if (sd && sd.text != null && sd.text !== "") {
+        delete sd.text;
+        changed = true;
+      }
+    });
+    if (changed) scheduleCloudSave();
+  }
+
   function doGenerate() {
     triggerWarningFlash();
+    clearDynamicValueTextOverrides();
     const n = getCount();
     const baseEntry = String(els.entry?.value || "").trim();
     const currentSignature = getCurrentRenderSignature();
@@ -1977,6 +1996,7 @@
     if (els.downloadZip) els.downloadZip.addEventListener("click", downloadZip);
     if (els.reroll) {
       els.reroll.addEventListener("click", () => {
+        clearDynamicValueTextOverrides();
         generatedItems = [];
         previewIndex = -1;
         samplePercent = null;
