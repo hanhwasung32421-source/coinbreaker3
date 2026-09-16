@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 16일 - 12";
+  const BUILD_VERSION = "2026년 9월 16일 - 13";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -1610,6 +1610,60 @@
     clearTimeout(cloudSaveTimer);
     cloudSavePending = true;
     cloudSaveTimer = setTimeout(() => cloudSaveNow({ silent: true }), 1200);
+  }
+
+  // 다른 컴퓨터(다른 IP)에서 컨트롤로 카드 디자인(위치/크기/색상/가로선 등)을
+  // 바꿔도, 이미 열려있는 다른 페이지(메인/maker/simple)는 처음 로드할 때 딱
+  // 한 번만 클라우드에서 값을 읽어오고 그 이후로는 새로고침 전까지 그 값을
+  // 그대로 메모리에 들고 있었습니다. 그래서 "새로고침해야 반영된다"는 문제가
+  // 있었습니다. 몇 초마다 "main" row의 공용 레이아웃(cardCustomStyles/bg)만
+  // 조용히 다시 확인해서, 바뀐 게 있으면 새로고침 없이 바로 재적용합니다.
+  // (overlay 비교용 이미지는 각자 개인 작업용이라 동기화 대상에서 제외합니다.
+  //  수치 조정/문구/프리셋 등 프로필별 값도 동기화하지 않습니다 -- 그건 각
+  //  페이지/컴퓨터마다 독립적으로 유지되어야 하는 값입니다.)
+  let lastSharedLayoutSnapshot = null;
+  let sharedLayoutPollTimer = null;
+
+  function snapshotSharedLayout(cardStyles, bgState) {
+    return JSON.stringify({ cardCustomStyles: cardStyles || {}, bg: bgState || {} });
+  }
+
+  function markSharedLayoutSnapshotFromLocal() {
+    lastSharedLayoutSnapshot = snapshotSharedLayout(cardCustomStyles, { shiftX: bgShiftX, shiftY: bgShiftY, radius: cardRadiusPx });
+  }
+
+  async function pollSharedLayoutFromCloud() {
+    // 이 페이지에서 방금 수정해서 저장 대기/진행 중이면, 옛날 값을 다시 덮어쓸
+    // 수 있으니 이번 주기는 건너뜁니다.
+    if (!cloudConfigured() || cloudSavePending) return;
+    try {
+      const shared = await fetchCloudRow("main");
+      if (!shared) return;
+      const incoming = snapshotSharedLayout(shared.cardCustomStyles, shared.bg);
+      if (incoming === lastSharedLayoutSnapshot) return;
+      lastSharedLayoutSnapshot = incoming;
+
+      cardCustomStyles = shared.cardCustomStyles && typeof shared.cardCustomStyles === "object"
+        ? JSON.parse(JSON.stringify(shared.cardCustomStyles))
+        : JSON.parse(JSON.stringify(DEFAULT_CARD_CUSTOM_STYLES));
+      if (shared.bg && typeof shared.bg === "object") {
+        if (typeof shared.bg.shiftX === "number") bgShiftX = shared.bg.shiftX;
+        if (typeof shared.bg.shiftY === "number") bgShiftY = shared.bg.shiftY;
+        if (typeof shared.bg.radius === "number") cardRadiusPx = clamp(shared.bg.radius, 0, 60);
+      }
+      syncBgShiftInputs();
+      syncCardRadiusInput();
+      const selTarget = document.getElementById("selNavTarget");
+      if (selTarget) updateNavControlsForTarget(selTarget.value);
+      renderAll();
+    } catch (e) {
+      // 무시하고 다음 주기에 다시 시도합니다.
+    }
+  }
+
+  function startSharedLayoutPolling() {
+    if (sharedLayoutPollTimer || !cloudConfigured()) return;
+    sharedLayoutPollTimer = setInterval(pollSharedLayoutFromCloud, 5000);
   }
 
   function fillCropUiFromCfg() {
@@ -3288,6 +3342,8 @@
     cloudReady = false;
     if (cloudConfigured()) await cloudLoad();
     cloudReady = true;
+    markSharedLayoutSnapshotFromLocal();
+    startSharedLayoutPolling();
     if (!els.side?.value) setSide(DEFAULTS.side, { shouldSave: false });
     
     const selTarget = document.getElementById("selNavTarget");
