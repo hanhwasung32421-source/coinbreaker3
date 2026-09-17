@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 17일 - 11";
+  const BUILD_VERSION = "2026년 9월 17일 - 12";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -1906,14 +1906,32 @@
     // DOM 업데이트가 반영될 시간을 조금 줌(프리셋 클릭 직후 텍스트가 캔버스에 누락되는 케이스 완화)
     await new Promise((r) => requestAnimationFrame(() => r()));
 
-    return window.html2canvas(els.cardRoot, {
-      backgroundColor: null,
-      scale: Math.max(2, window.devicePixelRatio || 1),
-      useCORS: true,
-      allowTaint: true,
-      foreignObjectRendering,
-      onclone: stripDarkReaderFromClone,
-    });
+    // html2canvas는 ::before/::after 같은 가상 요소를 "원본 문서"의 계산값으로
+    // 굳혀서 복제하므로, 복제본만 정리해서는 카드의 어두운 배경 레이어까지
+    // 되돌릴 수 없습니다. 캡처하는 동안만 확장이 주입한 스타일시트를 끄고,
+    // 끝나면 원래대로 켭니다. (화면이 아주 잠깐 원래 색으로 보일 수 있음)
+    const injectedSheets = getDarkReaderSheets();
+    const prevDisabled = injectedSheets.map((s) => s.disabled);
+    injectedSheets.forEach((s) => { try { s.disabled = true; } catch {} });
+    try {
+      if (injectedSheets.length) await new Promise((r) => requestAnimationFrame(() => r()));
+      return await window.html2canvas(els.cardRoot, {
+        backgroundColor: null,
+        scale: Math.max(2, window.devicePixelRatio || 1),
+        useCORS: true,
+        allowTaint: true,
+        foreignObjectRendering,
+        onclone: stripDarkReaderFromClone,
+      });
+    } finally {
+      injectedSheets.forEach((s, i) => { try { s.disabled = prevDisabled[i]; } catch {} });
+    }
+  }
+
+  function getDarkReaderSheets() {
+    return Array.from(document.querySelectorAll('style[class*="darkreader"], link[class*="darkreader"], style[id*="darkreader"]'))
+      .map((n) => n.sheet)
+      .filter(Boolean);
   }
 
   // Dark Reader 같은 다크모드 확장은 페이지에 자기 <style>을 주입하고 인라인
