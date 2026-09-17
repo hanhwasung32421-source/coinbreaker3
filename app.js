@@ -2,19 +2,25 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 17일 - 6";
+  const BUILD_VERSION = "2026년 9월 17일 - 7";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9udWRpa3VwbXlucXRpcmttbWxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0ODk0MDIsImV4cCI6MjEwNTA2NTQwMn0.HyT8vGYXwvoL0NK4Ip2VVYTZ4PtVhDWPL7_E6QnpA44";
   const SUPABASE_TABLE = "cb3_coinbreaker_state";
 
+  // 새 독립 페이지(예: supply 복제)를 추가할 때는 폴더 이름을 아래 두 목록 중
+  // 하나에 추가하기만 하면 됩니다(같은 프로젝트/테이블, row id만 폴더 이름으로 분리).
+  // - MAKER_LIKE_PAGES: 원래 maker처럼 "프리셋0"이 랜덤 크롭 후 클립보드 복사
+  // - SUPPLY_LIKE_PAGES: supply처럼 "프리셋0"이 크롭/복사 없이 카드 전체를 바로 표시
+  const MAKER_LIKE_PAGES = ["maker"];
+  const SUPPLY_LIKE_PAGES = ["supply", "gein"];
+  const INDEPENDENT_PROFILE_PAGES = [...MAKER_LIKE_PAGES, ...SUPPLY_LIKE_PAGES];
+
   function getSupabaseRowId() {
     const p = String(location.pathname || "").toLowerCase();
-    // maker/supply는 메인과 상태를 분리해서 저장합니다(같은 프로젝트/테이블, row id만 다름).
-    // (메인/컨트롤: main, maker: maker, supply: supply)
-    if (p.includes("/maker/") || p.endsWith("/maker") || p.endsWith("/maker/index.html")) return "maker";
-    if (p.includes("/supply/") || p.endsWith("/supply") || p.endsWith("/supply/index.html")) return "supply";
+    const seg = (p.match(/\/([^\/]+)\/?(?:index\.html)?$/) || [])[1] || "";
+    if (INDEPENDENT_PROFILE_PAGES.includes(seg)) return seg;
     return "main";
   }
 
@@ -22,14 +28,14 @@
     return getSupabaseRowId() === "maker";
   }
 
-  function isSupplyPage() {
-    return getSupabaseRowId() === "supply";
+  function usesFullCardGenerate() {
+    return SUPPLY_LIKE_PAGES.includes(getSupabaseRowId());
   }
 
-  // maker/supply처럼 자기 자신만의 독립 데이터셋을 쓰면서도, 배경/오버레이/카드 스타일
+  // maker/supply/gein처럼 자기 자신만의 독립 데이터셋을 쓰면서도, 배경/오버레이/카드 스타일
   // 같은 "공용 레이아웃"은 main으로부터 상속받는 페이지인지 여부.
   function usesSharedMainLayout() {
-    return isMakerPage() || isSupplyPage();
+    return getSupabaseRowId() !== "main";
   }
 
   const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -2440,7 +2446,7 @@
     }
     if (els.cloudLoad) els.cloudLoad.addEventListener("click", cloudLoad);
     if (els.cloudSave) els.cloudSave.addEventListener("click", cloudSaveNow);
-    if (els.generate) els.generate.addEventListener("click", isSupplyPage() ? doGenerate : runPreset0Action);
+    if (els.generate) els.generate.addEventListener("click", usesFullCardGenerate() ? doGenerate : runPreset0Action);
     if (els.downloadZip) els.downloadZip.addEventListener("click", downloadZip);
     if (els.reroll) {
       els.reroll.addEventListener("click", () => {
