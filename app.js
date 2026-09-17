@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 17일 - 12";
+  const BUILD_VERSION = "2026년 9월 17일 - 13";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -927,6 +927,21 @@
     return rows && rows[0] && rows[0].data ? rows[0].data : null;
   }
 
+  function normalizeCropCfg(cc) {
+    return {
+      fullCaptureProb: clamp(cc.fullCaptureProb, 0, 100),
+      widthMinPct: clamp(cc.widthMinPct, 1, 100),
+      widthMaxPct: clamp(cc.widthMaxPct, clamp(cc.widthMinPct, 1, 100), 100),
+      startPadXMax: Math.max(0, Math.round(Number(cc.startPadXMax) || 0)),
+      startPadYMax: Math.max(0, Math.round(Number(cc.startPadYMax) || 0)),
+      bottomPadMin: Math.max(0, Math.round(Number(cc.bottomPadMin) || 0)),
+      bottomPadMax: Math.max(Math.max(0, Math.round(Number(cc.bottomPadMin) || 0)), Math.round(Number(cc.bottomPadMax) || 0)),
+    };
+  }
+
+  // 컨트롤(main)에서 정하는 "공용 레이아웃": 배경, 비교 오버레이, 카드 스타일,
+  // 그리고 크롭 규칙. maker/supply/gein은 이 값들을 main에서 상속받아
+  // breaker와 같은 모양으로 캡처합니다.
   function mergeSharedLayoutState(baseState, sharedLayoutState) {
     const base = baseState && typeof baseState === "object" ? baseState : {};
     const shared = sharedLayoutState && typeof sharedLayoutState === "object" ? sharedLayoutState : null;
@@ -936,6 +951,7 @@
       bg: shared.bg ?? base.bg,
       overlay: shared.overlay ?? base.overlay,
       cardCustomStyles: shared.cardCustomStyles ?? base.cardCustomStyles,
+      cropCfg: shared.cropCfg ?? base.cropCfg,
     };
   }
 
@@ -1499,20 +1515,7 @@
     } else {
       congratsCfg = JSON.parse(JSON.stringify(DEFAULT_CONGRATS_CFG));
     }
-    if (state.cropCfg && typeof state.cropCfg === "object") {
-      const cc = state.cropCfg;
-      cropCfg = {
-        fullCaptureProb: clamp(cc.fullCaptureProb, 0, 100),
-        widthMinPct: clamp(cc.widthMinPct, 1, 100),
-        widthMaxPct: clamp(cc.widthMaxPct, clamp(cc.widthMinPct, 1, 100), 100),
-        startPadXMax: Math.max(0, Math.round(Number(cc.startPadXMax) || 0)),
-        startPadYMax: Math.max(0, Math.round(Number(cc.startPadYMax) || 0)),
-        bottomPadMin: Math.max(0, Math.round(Number(cc.bottomPadMin) || 0)),
-        bottomPadMax: Math.max(Math.max(0, Math.round(Number(cc.bottomPadMin) || 0)), Math.round(Number(cc.bottomPadMax) || 0)),
-      };
-    } else {
-      cropCfg = { ...DEFAULT_CROP_CFG };
-    }
+    cropCfg = state.cropCfg && typeof state.cropCfg === "object" ? normalizeCropCfg(state.cropCfg) : { ...DEFAULT_CROP_CFG };
 
     // 마이그레이션: 이전 버전에서 presetEntryCfg(진입가)로 저장했던 값을
     // 이번 버전에서는 presetProfitCfg(수익금)로 재사용합니다.
@@ -1643,12 +1646,12 @@
   let lastSharedLayoutSnapshot = null;
   let sharedLayoutPollTimer = null;
 
-  function snapshotSharedLayout(cardStyles, bgState) {
-    return JSON.stringify({ cardCustomStyles: cardStyles || {}, bg: bgState || {} });
+  function snapshotSharedLayout(cardStyles, bgState, crop) {
+    return JSON.stringify({ cardCustomStyles: cardStyles || {}, bg: bgState || {}, cropCfg: crop || {} });
   }
 
   function markSharedLayoutSnapshotFromLocal() {
-    lastSharedLayoutSnapshot = snapshotSharedLayout(cardCustomStyles, { shiftX: bgShiftX, shiftY: bgShiftY, radius: cardRadiusPx });
+    lastSharedLayoutSnapshot = snapshotSharedLayout(cardCustomStyles, { shiftX: bgShiftX, shiftY: bgShiftY, radius: cardRadiusPx }, cropCfg);
   }
 
   async function pollSharedLayoutFromCloud() {
@@ -1658,7 +1661,7 @@
     try {
       const shared = await fetchCloudRow("main");
       if (!shared) return;
-      const incoming = snapshotSharedLayout(shared.cardCustomStyles, shared.bg);
+      const incoming = snapshotSharedLayout(shared.cardCustomStyles, shared.bg, shared.cropCfg);
       if (incoming === lastSharedLayoutSnapshot) return;
       lastSharedLayoutSnapshot = incoming;
 
@@ -1666,6 +1669,10 @@
         ? JSON.parse(JSON.stringify(shared.cardCustomStyles))
         : JSON.parse(JSON.stringify(DEFAULT_CARD_CUSTOM_STYLES));
       ensureDecorativeStyleDefaults();
+      if (shared.cropCfg && typeof shared.cropCfg === "object") {
+        cropCfg = normalizeCropCfg(shared.cropCfg);
+        fillCropUiFromCfg();
+      }
       if (shared.bg && typeof shared.bg === "object") {
         if (typeof shared.bg.shiftX === "number") bgShiftX = shared.bg.shiftX;
         if (typeof shared.bg.shiftY === "number") bgShiftY = shared.bg.shiftY;
