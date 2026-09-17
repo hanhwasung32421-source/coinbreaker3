@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 17일 - 10";
+  const BUILD_VERSION = "2026년 9월 17일 - 11";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -1912,7 +1912,40 @@
       useCORS: true,
       allowTaint: true,
       foreignObjectRendering,
+      onclone: stripDarkReaderFromClone,
     });
+  }
+
+  // Dark Reader 같은 다크모드 확장은 페이지에 자기 <style>을 주입하고 인라인
+  // 스타일에 --darkreader-* 변수를 덧붙여 색상/투명도를 바꿉니다. html2canvas는
+  // 그 바뀐 계산값을 그대로 읽어서, 화면과 달리 캡처 결과에만 노란 뱃지 박스·
+  // 진한 구분선·회색 필터가 나타났습니다. 캡처용 복제 문서에서만 그 흔적을
+  // 제거해 원래 스타일로 렌더링합니다. (확장이 없으면 아무것도 하지 않음)
+  function stripDarkReaderFromClone(doc) {
+    try {
+      doc.querySelectorAll('style[class*="darkreader"], link[class*="darkreader"], style[id*="darkreader"]').forEach((n) => n.remove());
+      const root = doc.documentElement;
+      if (root) {
+        Array.from(root.attributes).forEach((a) => {
+          if (a.name.startsWith("data-darkreader")) root.removeAttribute(a.name);
+        });
+      }
+      doc.querySelectorAll("*").forEach((el) => {
+        Array.from(el.attributes).forEach((a) => {
+          if (a.name.startsWith("data-darkreader")) el.removeAttribute(a.name);
+        });
+        const st = el.style;
+        if (!st || !st.length) return;
+        const toDrop = [];
+        for (let i = 0; i < st.length; i++) {
+          const prop = st[i];
+          if (prop && prop.startsWith("--darkreader")) toDrop.push(prop);
+        }
+        toDrop.forEach((p) => st.removeProperty(p));
+      });
+    } catch {
+      // 복제 문서 정리는 최선 노력이며, 실패해도 캡처 자체는 계속 진행합니다.
+    }
   }
 
   // ---- 캡쳐 매커니즘 (새 구현) ----
