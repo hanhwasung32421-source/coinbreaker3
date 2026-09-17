@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 17일 - 8";
+  const BUILD_VERSION = "2026년 9월 17일 - 9";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -1529,26 +1529,7 @@
     applyOverlayToDom();
 
     cardCustomStyles = state.cardCustomStyles || JSON.parse(JSON.stringify(DEFAULT_CARD_CUSTOM_STYLES));
-    // 기본 선/박스가 항상 보이도록 최소 기본값 보정
-    if (!cardCustomStyles["#profitDivider"] || typeof cardCustomStyles["#profitDivider"] !== "object") {
-      cardCustomStyles["#profitDivider"] = { x: 0, y: 0, size: 300, weight: 4, color: "#38bdf8", opacity: 1 };
-    } else {
-      const st = cardCustomStyles["#profitDivider"];
-      if (st.size == null || Number(st.size) < 160) st.size = 300;
-      if (st.weight == null || Number(st.weight) < 2) st.weight = 4;
-      if (st.opacity == null || Number(st.opacity) <= 0) st.opacity = 1;
-      if (!st.color) st.color = "#38bdf8";
-    }
-    if (!cardCustomStyles["#txtSideBox"] || typeof cardCustomStyles["#txtSideBox"] !== "object") {
-      cardCustomStyles["#txtSideBox"] = { x: 0, y: 0, size: 34, height: 46, weight: 2, color: "#facc15", opacity: 1 };
-    } else {
-      const st = cardCustomStyles["#txtSideBox"];
-      if (st.size == null || Number(st.size) < 18) st.size = 34;
-      if (st.height == null || Number(st.height) < 18) st.height = 46;
-      if (st.weight == null || Number(st.weight) < 1) st.weight = 2;
-      if (st.opacity == null || Number(st.opacity) <= 0) st.opacity = 1;
-      if (!st.color) st.color = "#facc15";
-    }
+    ensureDecorativeStyleDefaults();
 
     generatedItems = [];
     previewIndex = -1;
@@ -1556,6 +1537,27 @@
     sampleProfit = null;
     sampleEntry = null;
     renderAll();
+  }
+
+  // 구분선(#profitDivider)/롱숏 박스(#txtSideBox)는 항목이 비어 있거나 color가 빠지면
+  // CSS 기본값(노란 2px 박스 등)이 그대로 노출됩니다. 어떤 경로로 스타일이 들어오든
+  // 빠진 값은 항상 breaker와 같은 코드 기본값(DEFAULT_CARD_CUSTOM_STYLES)으로 채웁니다.
+  function ensureDecorativeStyleDefaults() {
+    const fill = (selector, minSize, minWeight) => {
+      const def = DEFAULT_CARD_CUSTOM_STYLES[selector];
+      if (!cardCustomStyles[selector] || typeof cardCustomStyles[selector] !== "object") {
+        cardCustomStyles[selector] = JSON.parse(JSON.stringify(def));
+        return;
+      }
+      const st = cardCustomStyles[selector];
+      if (st.size == null || Number(st.size) < minSize) st.size = def.size;
+      if (selector === "#txtSideBox" && (st.height == null || Number(st.height) < minSize)) st.height = def.height;
+      if (st.weight == null || Number(st.weight) < minWeight) st.weight = def.weight;
+      if (st.opacity == null || Number(st.opacity) <= 0) st.opacity = def.opacity;
+      if (!st.color) st.color = def.color;
+    };
+    fill("#profitDivider", 160, 1);
+    fill("#txtSideBox", 18, 1);
   }
 
   async function cloudLoad() {
@@ -1663,6 +1665,7 @@
       cardCustomStyles = shared.cardCustomStyles && typeof shared.cardCustomStyles === "object"
         ? JSON.parse(JSON.stringify(shared.cardCustomStyles))
         : JSON.parse(JSON.stringify(DEFAULT_CARD_CUSTOM_STYLES));
+      ensureDecorativeStyleDefaults();
       if (shared.bg && typeof shared.bg === "object") {
         if (typeof shared.bg.shiftX === "number") bgShiftX = shared.bg.shiftX;
         if (typeof shared.bg.shiftY === "number") bgShiftY = shared.bg.shiftY;
