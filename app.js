@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 16일 - 13";
+  const BUILD_VERSION = "2026년 9월 17일 - 2";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -11,14 +11,25 @@
 
   function getSupabaseRowId() {
     const p = String(location.pathname || "").toLowerCase();
-    // maker는 메인과 상태를 분리해서 저장합니다.
-    // (메인/컨트롤: main, maker: maker)
+    // maker/supply는 메인과 상태를 분리해서 저장합니다(같은 프로젝트/테이블, row id만 다름).
+    // (메인/컨트롤: main, maker: maker, supply: supply)
     if (p.includes("/maker/") || p.endsWith("/maker") || p.endsWith("/maker/index.html")) return "maker";
+    if (p.includes("/supply/") || p.endsWith("/supply") || p.endsWith("/supply/index.html")) return "supply";
     return "main";
   }
 
   function isMakerPage() {
     return getSupabaseRowId() === "maker";
+  }
+
+  function isSupplyPage() {
+    return getSupabaseRowId() === "supply";
+  }
+
+  // maker/supply처럼 자기 자신만의 독립 데이터셋을 쓰면서도, 배경/오버레이/카드 스타일
+  // 같은 "공용 레이아웃"은 main으로부터 상속받는 페이지인지 여부.
+  function usesSharedMainLayout() {
+    return isMakerPage() || isSupplyPage();
   }
 
   const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -1553,7 +1564,7 @@
       if (!data && rowId !== "default") {
         data = await fetchCloudRow("default");
         if (data) {
-          const merged = isMakerPage() ? mergeSharedLayoutState(data, await fetchCloudRow("main")) : data;
+          const merged = usesSharedMainLayout() ? mergeSharedLayoutState(data, await fetchCloudRow("main")) : data;
           applyState(merged);
           showToastFor("클라우드(이전 데이터) 불러옴", 1400);
           scheduleCloudSave();
@@ -1561,17 +1572,17 @@
         }
       }
       if (data) {
-        if (isMakerPage()) {
+        if (usesSharedMainLayout()) {
           data = mergeSharedLayoutState(data, await fetchCloudRow("main"));
         }
         applyState(data);
         showToastFor("클라우드 불러오기 완료", 1200);
       } else {
-        if (isMakerPage()) {
+        if (usesSharedMainLayout()) {
           const layoutOnly = mergeSharedLayoutState(null, await fetchCloudRow("main"));
           if (layoutOnly && (layoutOnly.cardCustomStyles || layoutOnly.overlay || layoutOnly.bg)) {
             applyState(layoutOnly);
-            showToastFor("메이커 설정 없음, 메인 레이아웃만 불러옴", 1400);
+            showToastFor("메인 레이아웃만 불러옴", 1400);
             return;
           }
         }
@@ -2429,7 +2440,7 @@
     }
     if (els.cloudLoad) els.cloudLoad.addEventListener("click", cloudLoad);
     if (els.cloudSave) els.cloudSave.addEventListener("click", cloudSaveNow);
-    if (els.generate) els.generate.addEventListener("click", runPreset0Action);
+    if (els.generate) els.generate.addEventListener("click", isSupplyPage() ? doGenerate : runPreset0Action);
     if (els.downloadZip) els.downloadZip.addEventListener("click", downloadZip);
     if (els.reroll) {
       els.reroll.addEventListener("click", () => {
