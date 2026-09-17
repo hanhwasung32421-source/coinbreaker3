@@ -629,7 +629,7 @@ button.secondary{ background:#0c1220; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Coin Maker</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 17일 - 7</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 17일 - 8</span></div>
     </div>
 
     <div class="app">
@@ -647,7 +647,6 @@ button.secondary{ background:#0c1220; }
                   <div class="dgb-header">
                     <h2 class="dgb-title" data-nav-target=".dgb-title">futuresusdt</h2>
                   </div>
-
                   <div class="dgb-values">
                     <div class="dgb-pct">
                       <span id="txtPercent" data-nav-target="#txtPercent">19.75</span>
@@ -656,9 +655,7 @@ button.secondary{ background:#0c1220; }
                     <div class="dgb-amt" id="txtProfit" data-nav-target="#txtProfit">10,229,614 원</div>
                   </div>
                   <div id="profitDivider" class="dgb-profit-divider" data-nav-target="#profitDivider"></div>
-
                   <div class="dgb-separator"></div>
-
                   <div class="dgb-grid">
                     <div class="dgb-grid-item">
                       <label class="dgb-grid-label" data-nav-target=".dgb-grid-item:nth-child(1) .dgb-grid-label">코인</label>
@@ -684,23 +681,8 @@ button.secondary{ background:#0c1220; }
                     </div>
                   </div>
                 </div>
-
                 <button type="button" class="dgb-close-btn" data-nav-target=".dgb-close-btn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-xicon w-4 h-4"
-                  >
-                    <path d="M18 6 6 18"></path>
-                    <path d="m6 6 12 12"></path>
-                  </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-xicon w-4 h-4"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
                   <span class="sr-only">Close</span>
                 </button>
               </div>
@@ -711,7 +693,8 @@ button.secondary{ background:#0c1220; }
             <img id="croppedPreviewImg" class="masked-preview-img" alt="cropped preview" />
           </div>
         </div>
-
+        <div class="hint">C는 DOM 기반 렌더링 후 캡처하는 방식입니다. A/B는 그대로 유지됩니다.</div>
+        <div class="hint">복사가 안 되면 브라우저 보안 정책 때문일 수 있어요. 권장: 로컬 서버로 열기(예: <code>python -m http.server 8000 --directory c:\trae</code>)</div>
         <div class="generate-wrap">
           <button id="btnGenerate" class="primary" type="button">프리셋0</button>
           <div id="warningNotice" class="warning-notice">
@@ -793,6 +776,6 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 17일 - 7"></script>
+    <script src="../app.js?v=2026년 9월 17일 - 8"></script>
   </body>
 </html>
