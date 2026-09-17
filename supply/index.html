@@ -9,7 +9,6 @@
          네트워크/다른 IP에서 fetch가 늦게 끝나거나 실패하면 구버전 style.css 폴백으로 렌더링되어
          뱃지 테두리 등이 다르게 보이는 문제가 있었음) -->
     <style>
-
 :root{
   --bg:#0b0f17;
   --panel:#111826;
@@ -35,21 +34,21 @@
 
 @font-face{
   font-family:"Noto Sans KR";
-  src:url("./Noto_Sans_KR/static/NotoSansKR-Regular.ttf") format("truetype");
+  src:url("../Noto_Sans_KR/static/NotoSansKR-Regular.ttf") format("truetype");
   font-weight:400;
   font-style:normal;
   font-display:swap;
 }
 @font-face{
   font-family:"Noto Sans KR";
-  src:url("./Noto_Sans_KR/static/NotoSansKR-Medium.ttf") format("truetype");
+  src:url("../Noto_Sans_KR/static/NotoSansKR-Medium.ttf") format("truetype");
   font-weight:500;
   font-style:normal;
   font-display:swap;
 }
 @font-face{
   font-family:"Noto Sans KR";
-  src:url("./Noto_Sans_KR/static/NotoSansKR-Bold.ttf") format("truetype");
+  src:url("../Noto_Sans_KR/static/NotoSansKR-Bold.ttf") format("truetype");
   font-weight:600;
   font-style:normal;
   font-display:swap;
@@ -625,18 +624,12 @@ button.secondary{ background:#0c1220; }
 }
 
 
-
-    /* maker: 메인 복제 기반, 프리셋/캡쳐 미리보기/네비게이터 제거 */
-    .app { grid-template-columns: 520px 600px; }
-    .controls { width: 600px; min-width: 600px; max-width: 600px; }
-    .controls h1 { margin: 0 0 14px; font-size: 18px; font-weight: 700; }
-    .hint { display: none; }
-    </style>
+</style>
   </head>
   <body>
     <div class="topbar">
       <div class="topbar-left">supply</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 17일 - 5</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 17일 - 6</span></div>
     </div>
 
     <div class="app">
@@ -796,6 +789,6 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 17일 - 5"></script>
+    <script src="../app.js?v=2026년 9월 17일 - 6"></script>
   </body>
 </html>
