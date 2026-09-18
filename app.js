@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 18일 - 4";
+  const BUILD_VERSION = "2026년 9월 18일 - 5";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -2684,6 +2684,14 @@
             els.profitMax.value = mx;
             scheduleCloudSave();
           }
+        }
+
+        // 이 프리셋이 "투자금" 모드면 수익금을 투자금×수익률로 계산하도록 전환하고,
+        // 아니면 위에서 적용한 범위(min~max) 랜덤 방식으로 되돌립니다.
+        if (pc && pc.mode === "invest" && String(pc.invest ?? "").trim() !== "") {
+          activeProfitSource = { mode: "invest", investWon: parseManWon(pc.invest, 0) };
+        } else {
+          activeProfitSource = { mode: "range", investWon: 0 };
         }
 
         lastPresetRetryCtx = { kind: "preset", presetId, pmin, pmax };
