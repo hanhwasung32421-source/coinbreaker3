@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 18일 - 3";
+  const BUILD_VERSION = "2026년 9월 18일 - 4";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -583,6 +583,9 @@
     "enabled": true
   };
   let presetProfitCfg = JSON.parse(JSON.stringify(DEFAULT_PRESET_PROFIT_CFG));
+  // 방금 클릭한 프리셋의 수익금 산출 방식(수익금 범위 랜덤 vs 투자금×수익률 자동계산).
+  // 프리셋 버튼을 누를 때마다 그 프리셋의 설정으로 갱신됩니다.
+  let activeProfitSource = { mode: "range", investWon: 0 };
   let presetProfitScalePct = DEFAULT_PRESET_PROFIT_SCALE_PCT;
   let presetProfitAutoScale = JSON.parse(JSON.stringify(DEFAULT_PRESET_PROFIT_AUTO_SCALE));
   let lastPresetRetryCtx = null;
@@ -744,10 +747,22 @@
     return pi / 100;
   }
 
+  // 투자금 모드: 투자금 × 수익률로 수익금을 직접 계산합니다(배율 미적용).
+  function investProfitForPercent(percent) {
+    return Math.floor((activeProfitSource.investWon * percent) / 100);
+  }
+
+  function isInvestModeActive() {
+    return activeProfitSource.mode === "invest" && activeProfitSource.investWon > 0;
+  }
+
   function randomPercentProfit() {
     const { minP, maxP } = getPercentMinMax();
-    const { minWon, maxWon } = getProfitMinMax();
     const p = pickPercent2NoZeroSecondDigit(minP, maxP);
+    if (isInvestModeActive()) {
+      return { percent: p, profit: investProfitForPercent(p) };
+    }
+    const { minWon, maxWon } = getProfitMinMax();
     const f = minWon === maxWon ? minWon : randInt(minWon, maxWon);
     return { percent: p, profit: f };
   }
@@ -846,8 +861,7 @@
 
   function buildRenderItem(baseEntry) {
     const { percent, profit: rawProfit } = randomPercentProfit();
-    const scalePct = getEffectiveProfitScalePctForPercent(percent);
-    const profit = applyProfitScale(rawProfit, scalePct);
+    const profit = isInvestModeActive() ? rawProfit : applyProfitScale(rawProfit, getEffectiveProfitScalePctForPercent(percent));
     return { percent, profit, entry: randomEntryFromBase(baseEntry) };
   }
 
@@ -1049,6 +1063,11 @@
 
   function normalizePresetProfitCfg(cfg) {
     const out = JSON.parse(JSON.stringify(DEFAULT_PRESET_PROFIT_CFG));
+    for (let i = 1; i <= 10; i++) {
+      const k = String(i);
+      out[k].mode = "range";
+      out[k].invest = "";
+    }
     if (!cfg || typeof cfg !== "object") return out;
     for (let i = 1; i <= 10; i++) {
       const k = String(i);
@@ -1057,9 +1076,23 @@
       out[k] = {
         min: String(v.min ?? out[k]?.min ?? "").trim(),
         max: String(v.max ?? out[k]?.max ?? "").trim(),
+        mode: v.mode === "invest" ? "invest" : "range",
+        invest: String(v.invest ?? "").trim(),
       };
     }
     return out;
+  }
+
+  // 프리셋 수익금 행의 모드(수익금 범위 / 투자금)에 따라 사용하지 않는
+  // 입력칸을 흐리게 비활성화해서 지금 뭐가 적용되는지 헷갈리지 않게 합니다.
+  function updatePresetProfitRowUiState(k) {
+    const isInvest = !!document.getElementById(`radPresetProfitModeInvest${k}`)?.checked;
+    const minEl = document.getElementById(`inpPresetProfitMin${k}`);
+    const maxEl = document.getElementById(`inpPresetProfitMax${k}`);
+    const investEl = document.getElementById(`inpPresetProfitInvest${k}`);
+    if (minEl) minEl.disabled = isInvest;
+    if (maxEl) maxEl.disabled = isInvest;
+    if (investEl) investEl.disabled = !isInvest;
   }
 
   function fillPresetProfitUiFromCfg() {
@@ -1067,8 +1100,17 @@
       const k = String(i);
       const minEl = document.getElementById(`inpPresetProfitMin${k}`);
       const maxEl = document.getElementById(`inpPresetProfitMax${k}`);
-      if (minEl) minEl.value = String(presetProfitCfg?.[k]?.min ?? "");
-      if (maxEl) maxEl.value = String(presetProfitCfg?.[k]?.max ?? "");
+      const investEl = document.getElementById(`inpPresetProfitInvest${k}`);
+      const rangeRadio = document.getElementById(`radPresetProfitModeRange${k}`);
+      const investRadio = document.getElementById(`radPresetProfitModeInvest${k}`);
+      const cfg = presetProfitCfg?.[k];
+      if (minEl) minEl.value = String(cfg?.min ?? "");
+      if (maxEl) maxEl.value = String(cfg?.max ?? "");
+      if (investEl) investEl.value = String(cfg?.invest ?? "");
+      const isInvest = cfg?.mode === "invest";
+      if (rangeRadio) rangeRadio.checked = !isInvest;
+      if (investRadio) investRadio.checked = isInvest;
+      updatePresetProfitRowUiState(k);
     }
     const scaleEl = document.getElementById("inpPresetProfitScalePct");
     if (scaleEl) scaleEl.value = String(Math.round(clamp(presetProfitScalePct, 0, 1000)));
@@ -1098,9 +1140,13 @@
       const k = String(i);
       const minEl = document.getElementById(`inpPresetProfitMin${k}`);
       const maxEl = document.getElementById(`inpPresetProfitMax${k}`);
+      const investEl = document.getElementById(`inpPresetProfitInvest${k}`);
+      const investRadio = document.getElementById(`radPresetProfitModeInvest${k}`);
       const min = minEl ? String(minEl.value ?? "").trim() : String(out[k]?.min ?? "");
       const max = maxEl ? String(maxEl.value ?? "").trim() : String(out[k]?.max ?? "");
-      out[k] = { min, max };
+      const invest = investEl ? String(investEl.value ?? "").trim() : "";
+      const mode = investRadio?.checked ? "invest" : "range";
+      out[k] = { min, max, mode, invest };
     }
     return out;
   }
@@ -1248,10 +1294,20 @@
       const k = String(i);
       const minEl = document.getElementById(`inpPresetProfitMin${k}`);
       const maxEl = document.getElementById(`inpPresetProfitMax${k}`);
-      [minEl, maxEl].forEach((el) => {
+      const investEl = document.getElementById(`inpPresetProfitInvest${k}`);
+      [minEl, maxEl, investEl].forEach((el) => {
         if (!el) return;
         el.addEventListener("input", onEdit);
         el.addEventListener("change", onEdit);
+      });
+      const rangeRadio = document.getElementById(`radPresetProfitModeRange${k}`);
+      const investRadio = document.getElementById(`radPresetProfitModeInvest${k}`);
+      [rangeRadio, investRadio].forEach((el) => {
+        if (!el) return;
+        el.addEventListener("change", () => {
+          updatePresetProfitRowUiState(k);
+          onEdit();
+        });
       });
     }
     const scaleEl = document.getElementById("inpPresetProfitScalePct");
@@ -1814,17 +1870,23 @@
   }
 
   function rerollIfNeeded(force = false) {
-    const fk = `${String(els.profitMin?.value || "")}|${String(els.profitMax?.value || "")}`;
+    const fk = isInvestModeActive()
+      ? `invest:${activeProfitSource.investWon}`
+      : `range:${String(els.profitMin?.value || "")}|${String(els.profitMax?.value || "")}`;
     const { minP, maxP } = getPercentMinMax();
     const pk = `${minP}|${maxP}`;
     if (force || pk !== lastPercentKey || fk !== lastProfitKey || samplePercent == null || sampleProfitRaw == null) {
       samplePercent = pickPercent2NoZeroSecondDigit(minP, maxP);
-      const { minWon, maxWon } = getProfitMinMax();
-      sampleProfitRaw = minWon === maxWon ? minWon : randInt(minWon, maxWon);
+      if (isInvestModeActive()) {
+        sampleProfitRaw = investProfitForPercent(samplePercent);
+      } else {
+        const { minWon, maxWon } = getProfitMinMax();
+        sampleProfitRaw = minWon === maxWon ? minWon : randInt(minWon, maxWon);
+      }
       lastPercentKey = pk;
       lastProfitKey = fk;
     }
-    sampleProfit = applyProfitScale(sampleProfitRaw, getEffectiveProfitScalePctForPercent(samplePercent));
+    sampleProfit = isInvestModeActive() ? sampleProfitRaw : applyProfitScale(sampleProfitRaw, getEffectiveProfitScalePctForPercent(samplePercent));
     return { percent: samplePercent, profit: sampleProfit };
   }
 

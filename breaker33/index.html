@@ -180,6 +180,12 @@ button.secondary{ background:#0c1220; }
 .preset-profit-grid{ display:grid; gap:10px; }
 .preset-profit-row{ display:grid; grid-template-columns: 120px 1fr 1fr; gap:10px; align-items:center; }
 .preset-profit-name{ color:rgba(231,238,252,.92); font-size:12px; }
+.preset-profit-row-invest{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.preset-profit-row-invest .preset-profit-name{ flex:0 0 120px; }
+.preset-profit-row-invest .preset-profit-mode{ display:flex; align-items:center; gap:4px; font-size:12px; color:rgba(231,238,252,.85); white-space:nowrap; }
+.preset-profit-row-invest .preset-profit-mode input[type="radio"]{ margin:0; }
+.preset-profit-row-invest input[type="text"]{ flex:1 1 90px; min-width:70px; }
+.preset-profit-row-invest input:disabled{ opacity:.4; }
 .span-2{ grid-column:1 / -1; }
 .preset-grid{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
 .preset-btn{ width:100%; white-space:nowrap; }
@@ -653,7 +659,7 @@ button.secondary{ background:#0c1220; }
           >stockmaker3</a
         >
       </div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 18일 - 3</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 18일 - 4</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -870,6 +876,7 @@ button.secondary{ background:#0c1220; }
             <summary>프리셋 수익금 범위 설정</summary>
             <div class="phrase-help">
               프리셋1~10을 누를 때 <b>수익금(만원)</b> 범위를 아래 값으로 자동 적용합니다.
+              각 프리셋마다 "수익금"(범위1~범위2 중 랜덤) 또는 "투자금"(투자금×수익률로 자동 계산, 배율 미적용) 중 하나를 선택할 수 있습니다.
             </div>
             <div class="preset-profit-grid">
               <div id="presetProfitScaleRow" class="preset-profit-row">
@@ -982,55 +989,85 @@ button.secondary{ background:#0c1220; }
                   </div>
                 </div>
               </div>
-              <div class="preset-profit-row">
+              <div class="preset-profit-row preset-profit-row-invest">
                 <div class="preset-profit-name">프리셋1 수익금</div>
-                <input id="inpPresetProfitMin1" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax1" type="text" placeholder="최대" />
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode1" id="radPresetProfitModeRange1" checked /> 수익금</label>
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode1" id="radPresetProfitModeInvest1" /> 투자금</label>
+                <input id="inpPresetProfitMin1" type="text" placeholder="범위1" />
+                <input id="inpPresetProfitMax1" type="text" placeholder="범위2" />
+                <input id="inpPresetProfitInvest1" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="preset-profit-row preset-profit-row-invest">
                 <div class="preset-profit-name">프리셋2 수익금</div>
-                <input id="inpPresetProfitMin2" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax2" type="text" placeholder="최대" />
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode2" id="radPresetProfitModeRange2" checked /> 수익금</label>
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode2" id="radPresetProfitModeInvest2" /> 투자금</label>
+                <input id="inpPresetProfitMin2" type="text" placeholder="범위1" />
+                <input id="inpPresetProfitMax2" type="text" placeholder="범위2" />
+                <input id="inpPresetProfitInvest2" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="preset-profit-row preset-profit-row-invest">
                 <div class="preset-profit-name">프리셋3 수익금</div>
-                <input id="inpPresetProfitMin3" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax3" type="text" placeholder="최대" />
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode3" id="radPresetProfitModeRange3" checked /> 수익금</label>
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode3" id="radPresetProfitModeInvest3" /> 투자금</label>
+                <input id="inpPresetProfitMin3" type="text" placeholder="범위1" />
+                <input id="inpPresetProfitMax3" type="text" placeholder="범위2" />
+                <input id="inpPresetProfitInvest3" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="preset-profit-row preset-profit-row-invest">
                 <div class="preset-profit-name">프리셋4 수익금</div>
-                <input id="inpPresetProfitMin4" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax4" type="text" placeholder="최대" />
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode4" id="radPresetProfitModeRange4" checked /> 수익금</label>
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode4" id="radPresetProfitModeInvest4" /> 투자금</label>
+                <input id="inpPresetProfitMin4" type="text" placeholder="범위1" />
+                <input id="inpPresetProfitMax4" type="text" placeholder="범위2" />
+                <input id="inpPresetProfitInvest4" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="preset-profit-row preset-profit-row-invest">
                 <div class="preset-profit-name">프리셋5 수익금</div>
-                <input id="inpPresetProfitMin5" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax5" type="text" placeholder="최대" />
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode5" id="radPresetProfitModeRange5" checked /> 수익금</label>
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode5" id="radPresetProfitModeInvest5" /> 투자금</label>
+                <input id="inpPresetProfitMin5" type="text" placeholder="범위1" />
+                <input id="inpPresetProfitMax5" type="text" placeholder="범위2" />
+                <input id="inpPresetProfitInvest5" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="preset-profit-row preset-profit-row-invest">
                 <div class="preset-profit-name">프리셋6 수익금</div>
-                <input id="inpPresetProfitMin6" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax6" type="text" placeholder="최대" />
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode6" id="radPresetProfitModeRange6" checked /> 수익금</label>
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode6" id="radPresetProfitModeInvest6" /> 투자금</label>
+                <input id="inpPresetProfitMin6" type="text" placeholder="범위1" />
+                <input id="inpPresetProfitMax6" type="text" placeholder="범위2" />
+                <input id="inpPresetProfitInvest6" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="preset-profit-row preset-profit-row-invest">
                 <div class="preset-profit-name">프리셋7 수익금</div>
-                <input id="inpPresetProfitMin7" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax7" type="text" placeholder="최대" />
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode7" id="radPresetProfitModeRange7" checked /> 수익금</label>
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode7" id="radPresetProfitModeInvest7" /> 투자금</label>
+                <input id="inpPresetProfitMin7" type="text" placeholder="범위1" />
+                <input id="inpPresetProfitMax7" type="text" placeholder="범위2" />
+                <input id="inpPresetProfitInvest7" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="preset-profit-row preset-profit-row-invest">
                 <div class="preset-profit-name">프리셋8 수익금</div>
-                <input id="inpPresetProfitMin8" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax8" type="text" placeholder="최대" />
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode8" id="radPresetProfitModeRange8" checked /> 수익금</label>
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode8" id="radPresetProfitModeInvest8" /> 투자금</label>
+                <input id="inpPresetProfitMin8" type="text" placeholder="범위1" />
+                <input id="inpPresetProfitMax8" type="text" placeholder="범위2" />
+                <input id="inpPresetProfitInvest8" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="preset-profit-row preset-profit-row-invest">
                 <div class="preset-profit-name">프리셋9 수익금</div>
-                <input id="inpPresetProfitMin9" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax9" type="text" placeholder="최대" />
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode9" id="radPresetProfitModeRange9" checked /> 수익금</label>
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode9" id="radPresetProfitModeInvest9" /> 투자금</label>
+                <input id="inpPresetProfitMin9" type="text" placeholder="범위1" />
+                <input id="inpPresetProfitMax9" type="text" placeholder="범위2" />
+                <input id="inpPresetProfitInvest9" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="preset-profit-row preset-profit-row-invest">
                 <div class="preset-profit-name">프리셋10 수익금</div>
-                <input id="inpPresetProfitMin10" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax10" type="text" placeholder="최대" />
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode10" id="radPresetProfitModeRange10" checked /> 수익금</label>
+                <label class="preset-profit-mode"><input type="radio" name="presetProfitMode10" id="radPresetProfitModeInvest10" /> 투자금</label>
+                <input id="inpPresetProfitMin10" type="text" placeholder="범위1" />
+                <input id="inpPresetProfitMax10" type="text" placeholder="범위2" />
+                <input id="inpPresetProfitInvest10" type="text" placeholder="투자금" />
               </div>
             </div>
           </details>
@@ -1093,6 +1130,6 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 18일 - 3"></script>
+    <script src="../app.js?v=2026년 9월 18일 - 4"></script>
   </body>
 </html>
