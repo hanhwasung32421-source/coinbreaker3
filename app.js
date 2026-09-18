@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 18일 - 2";
+  const BUILD_VERSION = "2026년 9월 18일 - 3";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -14,7 +14,7 @@
   // - MAKER_LIKE_PAGES: 원래 maker처럼 "프리셋0"이 랜덤 크롭 후 클립보드 복사
   // - SUPPLY_LIKE_PAGES: supply처럼 "프리셋0"이 크롭/복사 없이 카드 전체를 바로 표시
   const MAKER_LIKE_PAGES = ["maker"];
-  const SUPPLY_LIKE_PAGES = ["supply", "gein"];
+  const SUPPLY_LIKE_PAGES = ["supply", "gein", "stockmaker3"];
   const INDEPENDENT_PROFILE_PAGES = [...MAKER_LIKE_PAGES, ...SUPPLY_LIKE_PAGES];
 
   function getSupabaseRowId() {
