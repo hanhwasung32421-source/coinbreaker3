@@ -632,6 +632,10 @@ button.secondary{ background:#0c1220; }
   display:flex !important; align-items:center; justify-content:center; padding:16px; border-radius:12px;
 }
 #cardRoot::before{ content:none !important; }
+.sm3-profit-row{ display:grid; grid-template-columns: 110px 108px 1fr 1fr 1fr; gap:6px; align-items:center; }
+.sm3-mode-toggle{ display:flex; flex-direction:column; gap:2px; font-size:11px; color:rgba(231,238,252,.85); }
+.sm3-mode-toggle label{ display:flex; align-items:center; gap:4px; white-space:nowrap; }
+.sm3-profit-row input[disabled]{ opacity:.4; }
 .sm3-mount{ width:100%; display:flex; align-items:center; justify-content:center; position:relative; z-index:3; }
 .sm3-placeholder{ color:rgba(231,238,252,.5); font-size:13px; padding:40px 20px; text-align:center; }
 .sm3-card{ width:380px; max-width:100%; font-family:"Pretendard","Noto Sans KR",sans-serif; box-sizing:border-box; -webkit-font-smoothing:antialiased; }
@@ -764,7 +768,7 @@ button.secondary{ background:#0c1220; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 18일 - 3</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 18일 - 4</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1052,55 +1056,109 @@ button.secondary{ background:#0c1220; }
                   </div>
                 </div>
               </div>
-              <div class="preset-profit-row">
+              <div class="sm3-profit-row">
                 <div class="preset-profit-name">프리셋1 수익금</div>
-                <input id="inpPresetProfitMin1" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax1" type="text" placeholder="최대" />
+                <div class="sm3-mode-toggle">
+                  <label><input type="radio" name="sm3ProfitMode1" value="amount" checked />수익금</label>
+                  <label><input type="radio" name="sm3ProfitMode1" value="principal" />투자금</label>
+                </div>
+                <input id="inpPresetProfitMin1" type="text" placeholder="수익금범위1" />
+                <input id="inpPresetProfitMax1" type="text" placeholder="수익금범위2" />
+                <input id="inpPresetPrincipal1" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="sm3-profit-row">
                 <div class="preset-profit-name">프리셋2 수익금</div>
-                <input id="inpPresetProfitMin2" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax2" type="text" placeholder="최대" />
+                <div class="sm3-mode-toggle">
+                  <label><input type="radio" name="sm3ProfitMode2" value="amount" checked />수익금</label>
+                  <label><input type="radio" name="sm3ProfitMode2" value="principal" />투자금</label>
+                </div>
+                <input id="inpPresetProfitMin2" type="text" placeholder="수익금범위1" />
+                <input id="inpPresetProfitMax2" type="text" placeholder="수익금범위2" />
+                <input id="inpPresetPrincipal2" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="sm3-profit-row">
                 <div class="preset-profit-name">프리셋3 수익금</div>
-                <input id="inpPresetProfitMin3" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax3" type="text" placeholder="최대" />
+                <div class="sm3-mode-toggle">
+                  <label><input type="radio" name="sm3ProfitMode3" value="amount" checked />수익금</label>
+                  <label><input type="radio" name="sm3ProfitMode3" value="principal" />투자금</label>
+                </div>
+                <input id="inpPresetProfitMin3" type="text" placeholder="수익금범위1" />
+                <input id="inpPresetProfitMax3" type="text" placeholder="수익금범위2" />
+                <input id="inpPresetPrincipal3" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="sm3-profit-row">
                 <div class="preset-profit-name">프리셋4 수익금</div>
-                <input id="inpPresetProfitMin4" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax4" type="text" placeholder="최대" />
+                <div class="sm3-mode-toggle">
+                  <label><input type="radio" name="sm3ProfitMode4" value="amount" checked />수익금</label>
+                  <label><input type="radio" name="sm3ProfitMode4" value="principal" />투자금</label>
+                </div>
+                <input id="inpPresetProfitMin4" type="text" placeholder="수익금범위1" />
+                <input id="inpPresetProfitMax4" type="text" placeholder="수익금범위2" />
+                <input id="inpPresetPrincipal4" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="sm3-profit-row">
                 <div class="preset-profit-name">프리셋5 수익금</div>
-                <input id="inpPresetProfitMin5" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax5" type="text" placeholder="최대" />
+                <div class="sm3-mode-toggle">
+                  <label><input type="radio" name="sm3ProfitMode5" value="amount" checked />수익금</label>
+                  <label><input type="radio" name="sm3ProfitMode5" value="principal" />투자금</label>
+                </div>
+                <input id="inpPresetProfitMin5" type="text" placeholder="수익금범위1" />
+                <input id="inpPresetProfitMax5" type="text" placeholder="수익금범위2" />
+                <input id="inpPresetPrincipal5" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="sm3-profit-row">
                 <div class="preset-profit-name">프리셋6 수익금</div>
-                <input id="inpPresetProfitMin6" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax6" type="text" placeholder="최대" />
+                <div class="sm3-mode-toggle">
+                  <label><input type="radio" name="sm3ProfitMode6" value="amount" checked />수익금</label>
+                  <label><input type="radio" name="sm3ProfitMode6" value="principal" />투자금</label>
+                </div>
+                <input id="inpPresetProfitMin6" type="text" placeholder="수익금범위1" />
+                <input id="inpPresetProfitMax6" type="text" placeholder="수익금범위2" />
+                <input id="inpPresetPrincipal6" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="sm3-profit-row">
                 <div class="preset-profit-name">프리셋7 수익금</div>
-                <input id="inpPresetProfitMin7" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax7" type="text" placeholder="최대" />
+                <div class="sm3-mode-toggle">
+                  <label><input type="radio" name="sm3ProfitMode7" value="amount" checked />수익금</label>
+                  <label><input type="radio" name="sm3ProfitMode7" value="principal" />투자금</label>
+                </div>
+                <input id="inpPresetProfitMin7" type="text" placeholder="수익금범위1" />
+                <input id="inpPresetProfitMax7" type="text" placeholder="수익금범위2" />
+                <input id="inpPresetPrincipal7" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="sm3-profit-row">
                 <div class="preset-profit-name">프리셋8 수익금</div>
-                <input id="inpPresetProfitMin8" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax8" type="text" placeholder="최대" />
+                <div class="sm3-mode-toggle">
+                  <label><input type="radio" name="sm3ProfitMode8" value="amount" checked />수익금</label>
+                  <label><input type="radio" name="sm3ProfitMode8" value="principal" />투자금</label>
+                </div>
+                <input id="inpPresetProfitMin8" type="text" placeholder="수익금범위1" />
+                <input id="inpPresetProfitMax8" type="text" placeholder="수익금범위2" />
+                <input id="inpPresetPrincipal8" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="sm3-profit-row">
                 <div class="preset-profit-name">프리셋9 수익금</div>
-                <input id="inpPresetProfitMin9" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax9" type="text" placeholder="최대" />
+                <div class="sm3-mode-toggle">
+                  <label><input type="radio" name="sm3ProfitMode9" value="amount" checked />수익금</label>
+                  <label><input type="radio" name="sm3ProfitMode9" value="principal" />투자금</label>
+                </div>
+                <input id="inpPresetProfitMin9" type="text" placeholder="수익금범위1" />
+                <input id="inpPresetProfitMax9" type="text" placeholder="수익금범위2" />
+                <input id="inpPresetPrincipal9" type="text" placeholder="투자금" />
               </div>
-              <div class="preset-profit-row">
+              <div class="sm3-profit-row">
                 <div class="preset-profit-name">프리셋10 수익금</div>
-                <input id="inpPresetProfitMin10" type="text" placeholder="최소" />
-                <input id="inpPresetProfitMax10" type="text" placeholder="최대" />
+                <div class="sm3-mode-toggle">
+                  <label><input type="radio" name="sm3ProfitMode10" value="amount" checked />수익금</label>
+                  <label><input type="radio" name="sm3ProfitMode10" value="principal" />투자금</label>
+                </div>
+                <input id="inpPresetProfitMin10" type="text" placeholder="수익금범위1" />
+                <input id="inpPresetProfitMax10" type="text" placeholder="수익금범위2" />
+                <input id="inpPresetPrincipal10" type="text" placeholder="투자금" />
+              </div>
+              <div class="sm3-profit-row" style="grid-template-columns: 120px 1fr;">
+                <div class="preset-profit-name">종목명 고정</div>
+                <input id="inpSm3StockName" type="text" placeholder="비우면 15개 종목 중 랜덤 (예: 삼성전자)" />
               </div>
             </div>
           </details>
@@ -1165,7 +1223,7 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 18일 - 3"></script>
+    <script src="../app.js?v=2026년 9월 18일 - 4"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1187,6 +1245,14 @@ button.secondary{ background:#0c1220; }
     return Number.isFinite(n) ? n : fallback;
   };
 
+  // 금액 끝자리가 0으로 딱 떨어지지 않도록, 마지막 한 자리를 항상 1~9 중 랜덤으로 덮어씁니다.
+  const withRandomNonZeroLastDigit = (n) => Math.floor(n / 10) * 10 + randInt(1, 9);
+
+  function getPresetMode(presetId) {
+    const checked = document.querySelector(`input[name="sm3ProfitMode${presetId}"]:checked`);
+    return checked ? checked.value : "amount";
+  }
+
   function getPresetRange(presetId, btn) {
     const overrideMin = document.getElementById(`inpPresetProfitMin${presetId}`);
     const overrideMax = document.getElementById(`inpPresetProfitMax${presetId}`);
@@ -1196,25 +1262,42 @@ button.secondary{ background:#0c1220; }
     return { pmin: numOr(btn.getAttribute("data-pmin"), 50), pmax: numOr(btn.getAttribute("data-pmax"), 100) };
   }
 
-  function generateStockData(presetId, btn) {
-    const { pmin, pmax } = getPresetRange(presetId, btn);
-    const lo = Math.min(pmin, pmax), hi = Math.max(pmin, pmax);
-    const amountManwon = randInt(lo, hi);
-    const amount = amountManwon * 10000;
-
+  function getRate() {
     const rMin = numOr(document.getElementById("inpPercentMin")?.value, 16);
     const rMax = numOr(document.getElementById("inpPercentMax")?.value, 21);
-    const rate = randFloat(Math.min(rMin, rMax), Math.max(rMin, rMax)) || 1;
+    return randFloat(Math.min(rMin, rMax), Math.max(rMin, rMax)) || 1;
+  }
 
-    const principal = Math.max(10000, Math.round(amount / (rate / 100)));
-    const name = STOCK_NAMES[randInt(0, STOCK_NAMES.length - 1)];
+  function getStockName() {
+    const fixed = document.getElementById("inpSm3StockName")?.value.trim();
+    return fixed ? fixed : STOCK_NAMES[randInt(0, STOCK_NAMES.length - 1)];
+  }
+
+  function generateStockData(presetId, btn) {
+    const mode = getPresetMode(presetId);
+    const rate = getRate();
+    let amount, principal;
+
+    if (mode === "principal") {
+      const principalEl = document.getElementById(`inpPresetPrincipal${presetId}`);
+      const fixedPrincipal = principalEl && principalEl.value.trim() !== "" ? numOr(principalEl.value, null) : null;
+      principal = Math.max(10000, Math.round(fixedPrincipal != null ? fixedPrincipal : 10000000));
+      amount = withRandomNonZeroLastDigit(Math.max(1, Math.round(principal * (rate / 100))));
+    } else {
+      const { pmin, pmax } = getPresetRange(presetId, btn);
+      const lo = Math.min(pmin, pmax), hi = Math.max(pmin, pmax);
+      // 만원 단위가 아니라 원 단위로 범위 전체에서 랜덤을 뽑아 끝자리가 자연스럽게 흩어지게 합니다.
+      amount = withRandomNonZeroLastDigit(randInt(lo * 10000, hi * 10000));
+      principal = Math.max(10000, Math.round(amount / (rate / 100)));
+
+      const minEl = document.getElementById("inpProfitMin");
+      const maxEl = document.getElementById("inpProfitMax");
+      if (minEl) minEl.value = String(lo);
+      if (maxEl) maxEl.value = String(hi);
+    }
+
+    const name = getStockName();
     const date = todayStr();
-
-    const minEl = document.getElementById("inpProfitMin");
-    const maxEl = document.getElementById("inpProfitMax");
-    if (minEl) minEl.value = String(lo);
-    if (maxEl) maxEl.value = String(hi);
-
     return { name, amount, rate, principal, date };
   }
 
@@ -1438,7 +1521,27 @@ button.secondary{ background:#0c1220; }
     true
   );
 
+  function syncModeUi(presetId) {
+    const mode = getPresetMode(presetId);
+    const minEl = document.getElementById(`inpPresetProfitMin${presetId}`);
+    const maxEl = document.getElementById(`inpPresetProfitMax${presetId}`);
+    const principalEl = document.getElementById(`inpPresetPrincipal${presetId}`);
+    if (minEl) minEl.disabled = mode !== "amount";
+    if (maxEl) maxEl.disabled = mode !== "amount";
+    if (principalEl) principalEl.disabled = mode !== "principal";
+  }
+
+  function initModeToggles() {
+    for (let i = 1; i <= 10; i++) {
+      syncModeUi(i);
+      document.querySelectorAll(`input[name="sm3ProfitMode${i}"]`).forEach((radio) => {
+        radio.addEventListener("change", () => syncModeUi(i));
+      });
+    }
+  }
+
   function init() {
+    initModeToggles();
     const firstBtn = document.querySelector('.preset-btn[data-preset="1"]');
     if (firstBtn) {
       renderPreset("1", firstBtn);
