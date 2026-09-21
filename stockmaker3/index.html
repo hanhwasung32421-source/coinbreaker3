@@ -635,6 +635,9 @@ button.secondary{ background:#0c1220; }
   display:flex !important; align-items:center; justify-content:center; padding:16px; border-radius:12px;
 }
 #cardRoot::before{ content:none !important; }
+/* 오른쪽 컨트롤 패널 높이를 breaker와 같게 맞춥니다. (breaker는 내용이 길어 스크롤바가 생겨
+   버튼 폭이 3px 좁아지는데, 여기는 내용이 짧아 스크롤바가 없어 버튼이 더 넓게 보이던 차이) */
+.controls::after{ content:""; display:block; height:213px; }
 .sm3-profit-row{ display:grid; grid-template-columns: 110px 108px 1fr 1fr 1fr; gap:6px; align-items:center; }
 .sm3-mode-toggle{ display:flex; flex-direction:column; gap:2px; font-size:11px; color:rgba(231,238,252,.85); }
 .sm3-mode-toggle label{ display:flex; align-items:center; gap:4px; white-space:nowrap; }
@@ -776,7 +779,7 @@ button.secondary{ background:#0c1220; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 21일 - 8</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 21일 - 9</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1228,7 +1231,7 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 21일 - 8"></script>
+    <script src="../app.js?v=2026년 9월 21일 - 9"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
