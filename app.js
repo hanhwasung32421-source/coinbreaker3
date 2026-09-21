@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 18일 - 5";
+  const BUILD_VERSION = "2026년 9월 21일 - 2";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -1434,6 +1434,9 @@
     if (p4) parts.push(p4);
     return parts.join(" ").trim();
   }
+
+  // stockmaker3처럼 자체 프리셋 클릭 로직을 쓰는 페이지가 같은 문구 생성기를 재사용하도록 노출합니다.
+  window.__cbPhraseApi = { makePresetPhrase, undoPendingBagDraws };
 
   function collectState() {
     const toVal = (el) => (el ? String(el.value ?? "") : "");

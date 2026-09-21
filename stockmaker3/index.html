@@ -768,7 +768,7 @@ button.secondary{ background:#0c1220; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 18일 - 6</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 21일 - 2</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1220,7 +1220,7 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 18일 - 6"></script>
+    <script src="../app.js?v=2026년 9월 21일 - 2"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1482,8 +1482,31 @@ button.secondary{ background:#0c1220; }
     }
   }
 
+  let lastPresetPhrase = "";
+
+  // 원래 프리셋 핸들러가 하던 "프리셋 아래 문구 생성 + 선택(복사 편의)"을 대신 수행합니다.
+  function fillPresetCaption(presetId, rate) {
+    const api = window.__cbPhraseApi;
+    const caption = document.querySelector(`.preset-caption[data-preset="${presetId}"]`);
+    if (!api || !caption) return;
+    let phrase = "";
+    for (let i = 0; i < 30; i++) {
+      phrase = api.makePresetPhrase(rate);
+      if (phrase && phrase !== lastPresetPhrase) break;
+      api.undoPendingBagDraws();
+    }
+    lastPresetPhrase = phrase;
+    caption.textContent = phrase;
+    const range = document.createRange();
+    range.selectNodeContents(caption);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+  }
+
   function handlePreset(presetId, btn) {
-    renderPreset(presetId, btn);
+    const data = renderPreset(presetId, btn);
+    fillPresetCaption(presetId, data.rate);
     captureAndCopy();
   }
 
