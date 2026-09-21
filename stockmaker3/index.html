@@ -778,7 +778,7 @@ button.secondary{ background:#0c1220; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 21일 - 4</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 21일 - 5</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1230,7 +1230,7 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 21일 - 4"></script>
+    <script src="../app.js?v=2026년 9월 21일 - 5"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1427,10 +1427,12 @@ button.secondary{ background:#0c1220; }
     9: (c) => ({ n: $$(c, ".sm3-s9-table tbody td", 0), a: $$(c, ".sm3-s9-table tbody td", 2), r: $$(c, ".sm3-s9-table tbody td", 1) }),
     10: (c) => ({ n: $$(c, ".sm3-s10-name"), a: $$(c, ".sm3-s10-val", 0), r: $$(c, ".sm3-s10-val", 1) }),
   };
-  // 크롭 영역에 들어오면 안 되는 헤더/아이콘/버튼 같은 덩어리(박스 단위)
-  const CROP_SKIP_BOXES =
-    ".sm3-s1-head,.sm3-s3-avatar,.sm3-s4-status,.sm3-s4-nav,.sm3-s4-icon,.sm3-s4-btn,.sm3-s5-head,.sm3-s6-icon,.sm3-s6-btns," +
-    ".sm3-s7-head,.sm3-s8-head,.sm3-s9-title,.sm3-s9-tabs,.sm3-s9-note,.sm3-s10-head";
+  // 크롭에 들어오면 안 되는 금액/버튼 영역(투자금·매수금액·평가금액·버튼 등)
+  const CROP_FORBID =
+    ".sm3-s4-row:last-child,.sm3-s4-btn,.sm3-s5-cell:nth-child(3),.sm3-s5-cell:nth-child(4),.sm3-s6-btns," +
+    ".sm3-s7-cell:nth-child(3),.sm3-s7-cell:nth-child(4),.sm3-s8-foot,.sm3-s10-foot";
+  // 통째로 보이거나 통째로 빠져야 하는 양식 요소(아이콘/아바타). 잘려서 반쪽만 보이면 안 됨
+  const CROP_FORMAT_BOXES = ".sm3-s3-avatar,.sm3-s4-icon,.sm3-s6-icon";
   const WEIGHT_POOL = [400, 500, 600, 700, 800];
 
   function tagCard(presetId, card) {
@@ -1444,7 +1446,7 @@ button.secondary{ background:#0c1220; }
       t[k].classList.add(cls);
       t[k].setAttribute("data-crop", "keep");
     });
-    card.querySelectorAll(CROP_SKIP_BOXES).forEach((el) => el.setAttribute("data-crop-skip", "1"));
+    card.querySelectorAll(CROP_FORBID).forEach((el) => el.setAttribute("data-crop-forbid", "1"));
   }
 
   function renderPreset(presetId, btn) {
@@ -1467,12 +1469,14 @@ button.secondary{ background:#0c1220; }
   };
   const hits = (a, b) => a.x1 < b.x2 && a.x2 > b.x1 && a.y1 < b.y2 && a.y2 > b.y1;
 
-  // 종목명/수익률/수익금이 보이는 영역만 크롭하되, 매번 여백을 랜덤하게 다르게 잡습니다.
-  // 다른 글자(투자금·헤더·버튼 등)는 잘리거나 새로 들어오지 않도록 여백을 제한합니다.
+  // 종목명/수익률/수익금을 기준으로 크롭하되, 카드의 배경·양식(증권사 MTS 헤더/라벨/표 등)도
+  // 보이도록 여백을 넉넉하고 매번 다르게 잡습니다.
+  // - 투자금/매수금액/버튼 같은 금액·버튼 영역은 절대 들어오지 않게 여백을 제한
+  // - 그 외 양식 글자(헤더·라벨·날짜 등)는 반쪽만 잘리지 않게 "통째로 포함" 또는 "통째로 제외"
   function computeCropRect(cardRoot, doc = document) {
     const card = cardRoot.querySelector(".sm3-card");
     const rootRect = cardRoot.getBoundingClientRect();
-    const full = { x: 0, y: 0, w: rootRect.width, h: rootRect.height, hide: [], rootW: rootRect.width, rootH: rootRect.height };
+    const full = { x: 0, y: 0, w: rootRect.width, h: rootRect.height, rootW: rootRect.width, rootH: rootRect.height };
     if (!card) return full;
     const keeps = [...card.querySelectorAll('[data-crop="keep"]')];
     if (!keeps.length) return full;
@@ -1488,48 +1492,84 @@ button.secondary{ background:#0c1220; }
     const inset = Math.ceil(radius * 0.3) + 3;
     const inner = { x1: cr.left + inset, y1: cr.top + inset, x2: cr.right - inset, y2: cr.bottom - inset };
 
-    const skips = [];
+    const valid = (r) => r.x2 > r.x1 && r.y2 > r.y1;
+    const forbid = [];
+    const format = [];
     const walker = doc.createTreeWalker(card, NodeFilter.SHOW_TEXT);
     for (let n = walker.nextNode(); n; n = walker.nextNode()) {
       if (!n.nodeValue.trim()) continue;
       const p = n.parentElement;
       if (!p || p.closest('[data-crop="keep"]') || p.querySelector('[data-crop="keep"]')) continue;
-      const r = textRect(n, doc);
-      r.el = p;
-      skips.push(r);
+      (p.closest("[data-crop-forbid]") ? forbid : format).push(textRect(n, doc));
     }
-    card.querySelectorAll("[data-crop-skip]").forEach((el) => {
-      const r = rectOf(el.getBoundingClientRect());
-      r.el = el;
-      skips.push(r);
-    });
-    const outside = skips.filter((s) => s.x2 > s.x1 && s.y2 > s.y1 && !hits(s, U));
+    card.querySelectorAll("[data-crop-forbid]").forEach((el) => forbid.push(rectOf(el.getBoundingClientRect())));
+    card.querySelectorAll(CROP_FORMAT_BOXES).forEach((el) => format.push(rectOf(el.getBoundingClientRect())));
+    const forbidR = forbid.filter(valid);
+    const formatR = format.filter(valid);
 
-    const pad = { l: randInt(4, 30), r: randInt(4, 30), t: randInt(4, 30), b: randInt(4, 30) };
-    const expand = () => ({
-      x1: Math.max(inner.x1, U.x1 - pad.l), y1: Math.max(inner.y1, U.y1 - pad.t),
-      x2: Math.min(inner.x2, U.x2 + pad.r), y2: Math.min(inner.y2, U.y2 + pad.b),
+    const MAXP = 90;
+    const pad = { l: randInt(8, 60), r: randInt(8, 60), t: randInt(8, 60), b: randInt(8, 60) };
+    const expandWith = (pd) => ({
+      x1: Math.max(inner.x1, U.x1 - pd.l), y1: Math.max(inner.y1, U.y1 - pd.t),
+      x2: Math.min(inner.x2, U.x2 + pd.r), y2: Math.min(inner.y2, U.y2 + pd.b),
     });
+    const contains = (E, f) => f.x1 >= E.x1 && f.x2 <= E.x2 && f.y1 >= E.y1 && f.y2 <= E.y2;
+    const hitsForbid = (E) => forbidR.some((f) => hits(f, E));
+    // 1) 금액/버튼 영역이 들어오지 않게 여백 제한(필수)
+    const limitByForbid = () => {
+      for (let pass = 0; pass < 3; pass++) {
+        for (const s of forbidR) {
+          if (hits(s, U) || !hits(s, expandWith(pad))) continue;
+          const cand = [];
+          if (s.y2 <= U.y1) cand.push(["t", U.y1 - s.y2 - 1]);
+          if (s.y1 >= U.y2) cand.push(["b", s.y1 - U.y2 - 1]);
+          if (s.x2 <= U.x1) cand.push(["l", U.x1 - s.x2 - 1]);
+          if (s.x1 >= U.x2) cand.push(["r", s.x1 - U.x2 - 1]);
+          if (!cand.length) continue;
+          cand.sort((a, b) => pad[a[0]] - Math.max(0, a[1]) - (pad[b[0]] - Math.max(0, b[1])));
+          const [side, lim] = cand[0];
+          pad[side] = Math.min(pad[side], Math.max(0, lim));
+        }
+      }
+    };
+    limitByForbid();
+    // 2) 양식 요소가 반쪽만 걸치면 통째로 포함(가능하면 50%) 또는 통째로 제외
     for (let pass = 0; pass < 2; pass++) {
-      for (const s of outside) {
-        if (!hits(s, expand())) continue;
-        const cand = [];
-        if (s.y2 <= U.y1) cand.push(["t", U.y1 - s.y2 - 1]);
-        if (s.y1 >= U.y2) cand.push(["b", s.y1 - U.y2 - 1]);
-        if (s.x2 <= U.x1) cand.push(["l", U.x1 - s.x2 - 1]);
-        if (s.x1 >= U.x2) cand.push(["r", s.x1 - U.x2 - 1]);
-        if (!cand.length) continue;
-        cand.sort((a, b) => pad[a[0]] - Math.max(0, a[1]) - (pad[b[0]] - Math.max(0, b[1])));
-        const [side, lim] = cand[0];
-        pad[side] = Math.min(pad[side], Math.max(0, lim));
+      for (const f of formatR) {
+        const E = expandWith(pad);
+        if (!hits(f, E) || contains(E, f)) continue;
+        const tryInclude = () => {
+          const np = {
+            l: Math.max(pad.l, U.x1 - f.x1), r: Math.max(pad.r, f.x2 - U.x2),
+            t: Math.max(pad.t, U.y1 - f.y1), b: Math.max(pad.b, f.y2 - U.y2),
+          };
+          if (np.l > MAXP || np.r > MAXP || np.t > MAXP || np.b > MAXP) return false;
+          const E2 = expandWith(np);
+          if (!contains(E2, f) || hitsForbid(E2)) return false;
+          Object.assign(pad, np);
+          return true;
+        };
+        const tryExclude = () => {
+          const cand = [];
+          if (f.y2 <= U.y1) cand.push(["t", U.y1 - f.y2 - 1]);
+          if (f.y1 >= U.y2) cand.push(["b", f.y1 - U.y2 - 1]);
+          if (f.x2 <= U.x1) cand.push(["l", U.x1 - f.x2 - 1]);
+          if (f.x1 >= U.x2) cand.push(["r", f.x1 - U.x2 - 1]);
+          if (!cand.length) return false;
+          cand.sort((a, b) => pad[a[0]] - Math.max(0, a[1]) - (pad[b[0]] - Math.max(0, b[1])));
+          const [side, lim] = cand[0];
+          pad[side] = Math.min(pad[side], Math.max(0, lim));
+          return true;
+        };
+        if (Math.random() < 0.5) { if (!tryInclude()) tryExclude(); }
+        else { if (!tryExclude()) tryInclude(); }
       }
     }
-    const E = expand();
-    // 크롭 안쪽에 남는 종목명/수익률/수익금 외의 글자(날짜·항목 라벨 등)는 캡처 중 숨깁니다.
-    const hide = skips.filter((s) => s.el && hits(s, E)).map((s) => s.el);
+    limitByForbid();
+    const E = expandWith(pad);
     return {
       x: Math.floor(E.x1 - rootRect.left), y: Math.floor(E.y1 - rootRect.top),
-      w: Math.ceil(E.x2 - E.x1), h: Math.ceil(E.y2 - E.y1), hide,
+      w: Math.ceil(E.x2 - E.x1), h: Math.ceil(E.y2 - E.y1),
       rootW: rootRect.width, rootH: rootRect.height,
     };
   }
@@ -1572,7 +1612,6 @@ button.secondary{ background:#0c1220; }
           const root = doc.getElementById("cardRoot");
           if (!root) return;
           crop = computeCropRect(root, doc);
-          crop.hide.forEach((el) => { el.style.visibility = "hidden"; });
         },
       });
       if (!crop) crop = { x: 0, y: 0, w: canvas.width / 2, h: canvas.height / 2, rootW: canvas.width / 2, rootH: canvas.height / 2 };
