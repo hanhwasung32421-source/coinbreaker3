@@ -778,7 +778,7 @@ button.secondary{ background:#0c1220; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 21일 - 5</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 21일 - 6</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1230,7 +1230,7 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 21일 - 5"></script>
+    <script src="../app.js?v=2026년 9월 21일 - 6"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1430,7 +1430,9 @@ button.secondary{ background:#0c1220; }
   // 크롭에 들어오면 안 되는 금액/버튼 영역(투자금·매수금액·평가금액·버튼 등)
   const CROP_FORBID =
     ".sm3-s4-row:last-child,.sm3-s4-btn,.sm3-s5-cell:nth-child(3),.sm3-s5-cell:nth-child(4),.sm3-s6-btns," +
-    ".sm3-s7-cell:nth-child(3),.sm3-s7-cell:nth-child(4),.sm3-s8-foot,.sm3-s10-foot";
+    ".sm3-s7-cell:nth-child(3),.sm3-s7-cell:nth-child(4),.sm3-s8-foot,.sm3-s10-foot," +
+    // 증권사 이름(카카오페이증권/MERITZ/SAMSUNG POP)은 크롭에 절대 보이면 안 됨
+    ".sm3-s6-sub,.sm3-s8-brand,.sm3-s10-brand";
   // 통째로 보이거나 통째로 빠져야 하는 양식 요소(아이콘/아바타). 잘려서 반쪽만 보이면 안 됨
   const CROP_FORMAT_BOXES = ".sm3-s3-avatar,.sm3-s4-icon,.sm3-s6-icon";
   const WEIGHT_POOL = [400, 500, 600, 700, 800];
@@ -1476,7 +1478,7 @@ button.secondary{ background:#0c1220; }
   function computeCropRect(cardRoot, doc = document) {
     const card = cardRoot.querySelector(".sm3-card");
     const rootRect = cardRoot.getBoundingClientRect();
-    const full = { x: 0, y: 0, w: rootRect.width, h: rootRect.height, rootW: rootRect.width, rootH: rootRect.height };
+    const full = { x: 0, y: 0, w: rootRect.width, h: rootRect.height, hide: [], rootW: rootRect.width, rootH: rootRect.height };
     if (!card) return full;
     const keeps = [...card.querySelectorAll('[data-crop="keep"]')];
     if (!keeps.length) return full;
@@ -1500,7 +1502,8 @@ button.secondary{ background:#0c1220; }
       if (!n.nodeValue.trim()) continue;
       const p = n.parentElement;
       if (!p || p.closest('[data-crop="keep"]') || p.querySelector('[data-crop="keep"]')) continue;
-      (p.closest("[data-crop-forbid]") ? forbid : format).push(textRect(n, doc));
+      const tr = textRect(n, doc);
+      if (p.closest("[data-crop-forbid]")) { tr.el = p; forbid.push(tr); } else format.push(tr);
     }
     card.querySelectorAll("[data-crop-forbid]").forEach((el) => forbid.push(rectOf(el.getBoundingClientRect())));
     card.querySelectorAll(CROP_FORMAT_BOXES).forEach((el) => format.push(rectOf(el.getBoundingClientRect())));
@@ -1567,10 +1570,12 @@ button.secondary{ background:#0c1220; }
     }
     limitByForbid();
     const E = expandWith(pad);
+    // 금지 글자가 크롭 한가운데(종목명/수익금 사이)에 끼어 있어 잘라낼 수 없으면 캡처 중 숨깁니다.
+    const hide = forbidR.filter((f) => f.el && hits(f, E)).map((f) => f.el);
     return {
       x: Math.floor(E.x1 - rootRect.left), y: Math.floor(E.y1 - rootRect.top),
       w: Math.ceil(E.x2 - E.x1), h: Math.ceil(E.y2 - E.y1),
-      rootW: rootRect.width, rootH: rootRect.height,
+      hide, rootW: rootRect.width, rootH: rootRect.height,
     };
   }
 
@@ -1612,6 +1617,7 @@ button.secondary{ background:#0c1220; }
           const root = doc.getElementById("cardRoot");
           if (!root) return;
           crop = computeCropRect(root, doc);
+          crop.hide.forEach((el) => { el.style.visibility = "hidden"; });
         },
       });
       if (!crop) crop = { x: 0, y: 0, w: canvas.width / 2, h: canvas.height / 2, rootW: canvas.width / 2, rootH: canvas.height / 2 };
