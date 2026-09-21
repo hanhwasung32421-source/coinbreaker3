@@ -642,10 +642,8 @@ button.secondary{ background:#0c1220; }
 /* 카드별 글씨체: Pretendard(기본) 5개(2,3,4,6,9) / 나눔고딕 2개(1,8) / IBM Plex Sans KR 3개(5,7,10) */
 .sm3-card.sm3-s1,.sm3-card.sm3-s8{ font-family:"Nanum Gothic","Noto Sans KR",sans-serif; }
 .sm3-card.sm3-s5,.sm3-card.sm3-s7,.sm3-card.sm3-s10{ font-family:"IBM Plex Sans KR","Noto Sans KR",sans-serif; }
-/* 종목명/수익금/수익률 굵기는 카드 생성마다 랜덤(--w-name/--w-amt/--w-rate) */
-.sm3-fn{ font-weight:var(--w-name,700) !important; }
-.sm3-fa{ font-weight:var(--w-amt,700) !important; }
-.sm3-fr{ font-weight:var(--w-rate,700) !important; }
+/* 모든 카드 글씨는 볼드 없이 일반 굵기 */
+.sm3-card, .sm3-card *{ font-weight:400 !important; }
 .sm3-mount{ width:100%; display:flex; align-items:center; justify-content:center; position:relative; z-index:3; }
 .sm3-placeholder{ color:rgba(231,238,252,.5); font-size:13px; padding:40px 20px; text-align:center; }
 .sm3-card{ width:380px; max-width:100%; font-family:"Pretendard","Noto Sans KR",sans-serif; box-sizing:border-box; -webkit-font-smoothing:antialiased; }
@@ -778,7 +776,7 @@ button.secondary{ background:#0c1220; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 21일 - 7</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 21일 - 8</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1230,7 +1228,7 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 21일 - 7"></script>
+    <script src="../app.js?v=2026년 9월 21일 - 8"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1434,7 +1432,7 @@ button.secondary{ background:#0c1220; }
     ".sm3-s6-sub,.sm3-s8-brand,.sm3-s10-brand";
   // 통째로 보이거나 통째로 빠져야 하는 양식 요소(아이콘/아바타). 잘려서 반쪽만 보이면 안 됨
   const CROP_FORMAT_BOXES = ".sm3-s3-avatar,.sm3-s4-icon,.sm3-s6-icon";
-  const WEIGHT_POOL = [400, 500, 600, 700, 800];
+  const WEIGHT_POOL = [400];
 
   function tagCard(presetId, card) {
     const pickW = () => WEIGHT_POOL[randInt(0, WEIGHT_POOL.length - 1)];
