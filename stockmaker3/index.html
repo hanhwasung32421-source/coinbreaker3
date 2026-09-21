@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Nanum+Gothic:wght@400;700;800&display=swap" />
     <title>Stock Maker3</title>
     <style>
 :root{
@@ -636,6 +639,13 @@ button.secondary{ background:#0c1220; }
 .sm3-mode-toggle{ display:flex; flex-direction:column; gap:2px; font-size:11px; color:rgba(231,238,252,.85); }
 .sm3-mode-toggle label{ display:flex; align-items:center; gap:4px; white-space:nowrap; }
 .sm3-profit-row input[disabled]{ opacity:.4; }
+/* 카드별 글씨체: Pretendard(기본) 5개(2,3,4,6,9) / 나눔고딕 2개(1,8) / IBM Plex Sans KR 3개(5,7,10) */
+.sm3-card.sm3-s1,.sm3-card.sm3-s8{ font-family:"Nanum Gothic","Noto Sans KR",sans-serif; }
+.sm3-card.sm3-s5,.sm3-card.sm3-s7,.sm3-card.sm3-s10{ font-family:"IBM Plex Sans KR","Noto Sans KR",sans-serif; }
+/* 종목명/수익금/수익률 굵기는 카드 생성마다 랜덤(--w-name/--w-amt/--w-rate) */
+.sm3-fn{ font-weight:var(--w-name,700) !important; }
+.sm3-fa{ font-weight:var(--w-amt,700) !important; }
+.sm3-fr{ font-weight:var(--w-rate,700) !important; }
 .sm3-mount{ width:100%; display:flex; align-items:center; justify-content:center; position:relative; z-index:3; }
 .sm3-placeholder{ color:rgba(231,238,252,.5); font-size:13px; padding:40px 20px; text-align:center; }
 .sm3-card{ width:380px; max-width:100%; font-family:"Pretendard","Noto Sans KR",sans-serif; box-sizing:border-box; -webkit-font-smoothing:antialiased; }
@@ -768,7 +778,7 @@ button.secondary{ background:#0c1220; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 21일 - 3</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 21일 - 4</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1220,7 +1230,7 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 21일 - 3"></script>
+    <script src="../app.js?v=2026년 9월 21일 - 4"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1403,12 +1413,125 @@ button.secondary{ background:#0c1220; }
 
   let lastPreset = null;
 
+  // 크롭 대상(종목명/수익금/수익률) 요소를 카드별로 찾는 규칙
+  const $$ = (c, sel, i = 0) => c.querySelectorAll(sel)[i] || null;
+  const CROP_TARGETS = {
+    1: (c) => ({ n: $$(c, ".sm3-s1-row div", 1), a: $$(c, ".sm3-s1-row div", 2), r: $$(c, ".sm3-s1-row div", 3) }),
+    2: (c) => ({ n: $$(c, ".sm3-s2-name"), a: $$(c, ".sm3-s2-amt"), r: $$(c, ".sm3-s2-rate") }),
+    3: (c) => ({ n: $$(c, ".sm3-s3-name"), a: $$(c, ".sm3-s3-amt"), r: $$(c, ".sm3-s3-rate") }),
+    4: (c) => ({ n: $$(c, ".sm3-s4-name"), a: $$(c, ".sm3-s4-val.sm3-pos", 0), r: $$(c, ".sm3-s4-val.sm3-pos", 1) }),
+    5: (c) => ({ n: $$(c, ".sm3-s5-name"), a: $$(c, ".sm3-s5-cell .sm3-val", 0), r: $$(c, ".sm3-s5-cell .sm3-val", 1) }),
+    6: (c) => ({ n: $$(c, ".sm3-s6-name"), a: $$(c, ".sm3-s6-amt"), r: $$(c, ".sm3-s6-rate") }),
+    7: (c) => ({ n: $$(c, ".sm3-s7-name"), a: $$(c, ".sm3-s7-cell span", 1), r: $$(c, ".sm3-s7-cell span", 0) }),
+    8: (c) => ({ n: $$(c, ".sm3-s8-name"), a: $$(c, ".sm3-s8-val", 0), r: $$(c, ".sm3-s8-val", 1) }),
+    9: (c) => ({ n: $$(c, ".sm3-s9-table tbody td", 0), a: $$(c, ".sm3-s9-table tbody td", 2), r: $$(c, ".sm3-s9-table tbody td", 1) }),
+    10: (c) => ({ n: $$(c, ".sm3-s10-name"), a: $$(c, ".sm3-s10-val", 0), r: $$(c, ".sm3-s10-val", 1) }),
+  };
+  // 크롭 영역에 들어오면 안 되는 헤더/아이콘/버튼 같은 덩어리(박스 단위)
+  const CROP_SKIP_BOXES =
+    ".sm3-s1-head,.sm3-s3-avatar,.sm3-s4-status,.sm3-s4-nav,.sm3-s4-icon,.sm3-s4-btn,.sm3-s5-head,.sm3-s6-icon,.sm3-s6-btns," +
+    ".sm3-s7-head,.sm3-s8-head,.sm3-s9-title,.sm3-s9-tabs,.sm3-s9-note,.sm3-s10-head";
+  const WEIGHT_POOL = [400, 500, 600, 700, 800];
+
+  function tagCard(presetId, card) {
+    const pickW = () => WEIGHT_POOL[randInt(0, WEIGHT_POOL.length - 1)];
+    card.style.setProperty("--w-name", String(pickW()));
+    card.style.setProperty("--w-amt", String(pickW()));
+    card.style.setProperty("--w-rate", String(pickW()));
+    const t = (CROP_TARGETS[Number(presetId)] || CROP_TARGETS[2])(card);
+    [["n", "sm3-fn"], ["a", "sm3-fa"], ["r", "sm3-fr"]].forEach(([k, cls]) => {
+      if (!t[k]) return;
+      t[k].classList.add(cls);
+      t[k].setAttribute("data-crop", "keep");
+    });
+    card.querySelectorAll(CROP_SKIP_BOXES).forEach((el) => el.setAttribute("data-crop-skip", "1"));
+  }
+
   function renderPreset(presetId, btn) {
     const data = generateStockData(presetId, btn);
     const mount = document.getElementById("sm3CardMount");
-    if (mount) mount.innerHTML = buildCardHtml(presetId, data);
+    if (mount) {
+      mount.innerHTML = buildCardHtml(presetId, data);
+      const card = mount.querySelector(".sm3-card");
+      if (card) tagCard(presetId, card);
+    }
     lastPreset = { presetId, btn };
     return data;
+  }
+
+  const rectOf = (r) => ({ x1: r.left, y1: r.top, x2: r.right, y2: r.bottom });
+  const textRect = (node, doc = document) => {
+    const rg = doc.createRange();
+    rg.selectNodeContents(node);
+    return rectOf(rg.getBoundingClientRect());
+  };
+  const hits = (a, b) => a.x1 < b.x2 && a.x2 > b.x1 && a.y1 < b.y2 && a.y2 > b.y1;
+
+  // 종목명/수익률/수익금이 보이는 영역만 크롭하되, 매번 여백을 랜덤하게 다르게 잡습니다.
+  // 다른 글자(투자금·헤더·버튼 등)는 잘리거나 새로 들어오지 않도록 여백을 제한합니다.
+  function computeCropRect(cardRoot, doc = document) {
+    const card = cardRoot.querySelector(".sm3-card");
+    const rootRect = cardRoot.getBoundingClientRect();
+    const full = { x: 0, y: 0, w: rootRect.width, h: rootRect.height, hide: [], rootW: rootRect.width, rootH: rootRect.height };
+    if (!card) return full;
+    const keeps = [...card.querySelectorAll('[data-crop="keep"]')];
+    if (!keeps.length) return full;
+
+    const kr = keeps.map((el) => textRect(el, doc));
+    const U = {
+      x1: Math.min(...kr.map((r) => r.x1)), y1: Math.min(...kr.map((r) => r.y1)),
+      x2: Math.max(...kr.map((r) => r.x2)), y2: Math.max(...kr.map((r) => r.y2)),
+    };
+
+    const cr = card.getBoundingClientRect();
+    const radius = parseFloat(doc.defaultView.getComputedStyle(card).borderTopLeftRadius) || 0;
+    const inset = Math.ceil(radius * 0.3) + 3;
+    const inner = { x1: cr.left + inset, y1: cr.top + inset, x2: cr.right - inset, y2: cr.bottom - inset };
+
+    const skips = [];
+    const walker = doc.createTreeWalker(card, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if (!n.nodeValue.trim()) continue;
+      const p = n.parentElement;
+      if (!p || p.closest('[data-crop="keep"]') || p.querySelector('[data-crop="keep"]')) continue;
+      const r = textRect(n, doc);
+      r.el = p;
+      skips.push(r);
+    }
+    card.querySelectorAll("[data-crop-skip]").forEach((el) => {
+      const r = rectOf(el.getBoundingClientRect());
+      r.el = el;
+      skips.push(r);
+    });
+    const outside = skips.filter((s) => s.x2 > s.x1 && s.y2 > s.y1 && !hits(s, U));
+
+    const pad = { l: randInt(4, 30), r: randInt(4, 30), t: randInt(4, 30), b: randInt(4, 30) };
+    const expand = () => ({
+      x1: Math.max(inner.x1, U.x1 - pad.l), y1: Math.max(inner.y1, U.y1 - pad.t),
+      x2: Math.min(inner.x2, U.x2 + pad.r), y2: Math.min(inner.y2, U.y2 + pad.b),
+    });
+    for (let pass = 0; pass < 2; pass++) {
+      for (const s of outside) {
+        if (!hits(s, expand())) continue;
+        const cand = [];
+        if (s.y2 <= U.y1) cand.push(["t", U.y1 - s.y2 - 1]);
+        if (s.y1 >= U.y2) cand.push(["b", s.y1 - U.y2 - 1]);
+        if (s.x2 <= U.x1) cand.push(["l", U.x1 - s.x2 - 1]);
+        if (s.x1 >= U.x2) cand.push(["r", s.x1 - U.x2 - 1]);
+        if (!cand.length) continue;
+        cand.sort((a, b) => pad[a[0]] - Math.max(0, a[1]) - (pad[b[0]] - Math.max(0, b[1])));
+        const [side, lim] = cand[0];
+        pad[side] = Math.min(pad[side], Math.max(0, lim));
+      }
+    }
+    const E = expand();
+    // 크롭 안쪽에 남는 종목명/수익률/수익금 외의 글자(날짜·항목 라벨 등)는 캡처 중 숨깁니다.
+    const hide = skips.filter((s) => s.el && hits(s, E)).map((s) => s.el);
+    return {
+      x: Math.floor(E.x1 - rootRect.left), y: Math.floor(E.y1 - rootRect.top),
+      w: Math.ceil(E.x2 - E.x1), h: Math.ceil(E.y2 - E.y1), hide,
+      rootW: rootRect.width, rootH: rootRect.height,
+    };
   }
 
   function updatePreview(blob) {
@@ -1435,11 +1558,32 @@ button.secondary{ background:#0c1220; }
   function buildCapturedBlobPromise() {
     return (async () => {
       await new Promise((r) => requestAnimationFrame(() => r()));
+      // 웹폰트(나눔고딕/IBM Plex)가 새 글자를 받아오는 중이면 끝날 때까지 기다린 뒤 캡처합니다.
+      try { await document.fonts.ready; } catch {}
+      await new Promise((r) => requestAnimationFrame(() => r()));
       const cardRoot = document.getElementById("cardRoot");
       if (!cardRoot || typeof window.html2canvas !== "function") throw new Error("html2canvas_missing");
-      const canvas = await window.html2canvas(cardRoot, { backgroundColor: null, scale: 2, useCORS: true });
+      // 레이아웃 기준을 html2canvas가 실제로 그리는 "복제 문서"에 맞춰 크롭 좌표를 계산합니다.
+      // (라이브 DOM과 복제 DOM은 웹폰트 로딩 타이밍에 따라 글자 크기/위치가 미세하게 달라질 수 있음)
+      let crop = null;
+      const canvas = await window.html2canvas(cardRoot, {
+        backgroundColor: null, scale: 2, useCORS: true,
+        onclone: (doc) => {
+          const root = doc.getElementById("cardRoot");
+          if (!root) return;
+          crop = computeCropRect(root, doc);
+          crop.hide.forEach((el) => { el.style.visibility = "hidden"; });
+        },
+      });
+      if (!crop) crop = { x: 0, y: 0, w: canvas.width / 2, h: canvas.height / 2, rootW: canvas.width / 2, rootH: canvas.height / 2 };
+      const sx = canvas.width / crop.rootW;
+      const sy = canvas.height / crop.rootH;
+      const out = document.createElement("canvas");
+      out.width = Math.max(1, Math.round(crop.w * sx));
+      out.height = Math.max(1, Math.round(crop.h * sy));
+      out.getContext("2d").drawImage(canvas, crop.x * sx, crop.y * sy, crop.w * sx, crop.h * sy, 0, 0, out.width, out.height);
       const blob = await new Promise((resolve, reject) =>
-        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("capture_failed"))), "image/png")
+        out.toBlob((b) => (b ? resolve(b) : reject(new Error("capture_failed"))), "image/png")
       );
       return blob;
     })();
