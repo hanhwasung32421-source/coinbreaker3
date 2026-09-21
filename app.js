@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 21일 - 2";
+  const BUILD_VERSION = "2026년 9월 21일 - 3";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -1310,6 +1310,11 @@
         });
       });
     }
+    const stockNameEl = document.getElementById("inpSm3StockName");
+    if (stockNameEl) {
+      stockNameEl.addEventListener("input", scheduleCloudSave);
+      stockNameEl.addEventListener("change", scheduleCloudSave);
+    }
     const scaleEl = document.getElementById("inpPresetProfitScalePct");
     if (scaleEl) {
       const onScaleEdit = () => {
@@ -1458,6 +1463,7 @@
         bgZoom: toVal(els.bgZoom),
         count: toVal(els.count),
         prefix: toVal(els.prefix),
+        sm3StockName: toVal(document.getElementById("inpSm3StockName")),
       },
       bg: { shiftX: bgShiftX, shiftY: bgShiftY, radius: cardRadiusPx },
       overlay: {
@@ -1502,6 +1508,7 @@
     setVal(els.bgZoom, s.bgZoom);
     setVal(els.count, s.count);
     setVal(els.prefix, s.prefix);
+    setVal(document.getElementById("inpSm3StockName"), s.sm3StockName);
     if (state.bg) {
       // 과거 저장값(0,0)이 들어있는 경우 배경이 중앙 기준으로 어색하게 보일 수 있어
       // C에서는 기본 원본 느낌(0,28)을 기준으로 두고, (0,0)은 "미설정"으로 취급합니다.
