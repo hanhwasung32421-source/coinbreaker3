@@ -704,8 +704,10 @@ button.secondary{ background:#0c1220; }
 
 /* Card 6: 카카오페이증권 */
 .sm3-s6{ background:#fff; border:1px solid #f5f5f5; border-radius:40px; box-shadow:0 4px 16px rgba(0,0,0,.08); padding:28px; }
-.sm3-s6-top{ display:flex; align-items:center; gap:16px; margin-bottom:12px; }
-.sm3-s6-icon{ width:56px; height:56px; border-radius:16px; background:#FEE500; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.sm3-s6-top{ display:flex; align-items:flex-start; gap:16px; margin-bottom:12px; }
+/* 마크는 살짝 위로, 종목명은 아래로 내려서 크롭 때 검은 점은 잘리고 노란 하단부만 남게 함 */
+.sm3-s6-namewrap{ padding-top:44px; }
+.sm3-s6-icon{ width:56px; height:56px; border-radius:16px; background:#FEE500; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:-6px; }
 .sm3-s6-icon i{ width:32px; height:32px; border-radius:50%; background:#111; display:block; }
 .sm3-s6-name{ font-size:22px; font-weight:900; color:#111; }
 .sm3-s6-sub{ font-size:14px; color:#aaa; font-weight:500; margin-top:2px; }
@@ -779,7 +781,7 @@ button.secondary{ background:#0c1220; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 21일 - 9</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 21일 - 10</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1231,7 +1233,7 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 21일 - 9"></script>
+    <script src="../app.js?v=2026년 9월 21일 - 10"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1355,7 +1357,7 @@ button.secondary{ background:#0c1220; }
         </div>`;
       case 6:
         return `<div class="sm3-card sm3-s6">
-          <div class="sm3-s6-top"><div class="sm3-s6-icon"><i></i></div><div><div class="sm3-s6-name">${d.name}</div><div class="sm3-s6-sub">카카오페이증권</div></div></div>
+          <div class="sm3-s6-top"><div class="sm3-s6-icon"><i></i></div><div class="sm3-s6-namewrap"><div class="sm3-s6-name">${d.name}</div></div></div>
           <div class="sm3-s6-label">수익금</div>
           <div class="sm3-s6-amt">+${fmt(d.amount)}원</div>
           <div class="sm3-s6-rate">+${pct(d.rate)}% (상승)</div>
@@ -1432,9 +1434,11 @@ button.secondary{ background:#0c1220; }
     ".sm3-s4-row:last-child,.sm3-s4-btn,.sm3-s5-cell:nth-child(3),.sm3-s5-cell:nth-child(4),.sm3-s6-btns," +
     ".sm3-s7-cell:nth-child(3),.sm3-s7-cell:nth-child(4),.sm3-s8-foot,.sm3-s10-foot," +
     // 증권사 이름(카카오페이증권/MERITZ/SAMSUNG POP)은 크롭에 절대 보이면 안 됨
-    ".sm3-s6-sub,.sm3-s8-brand,.sm3-s10-brand";
+    ".sm3-s8-brand,.sm3-s10-brand," +
+    // 프리셋 6: 카카오 마크의 검은 점은 크롭에 들어오면 안 됨(노란 하단부만 보이게)
+    ".sm3-s6-icon i";
   // 통째로 보이거나 통째로 빠져야 하는 양식 요소(아이콘/아바타). 잘려서 반쪽만 보이면 안 됨
-  const CROP_FORMAT_BOXES = ".sm3-s3-avatar,.sm3-s4-icon,.sm3-s6-icon";
+  const CROP_FORMAT_BOXES = ".sm3-s3-avatar,.sm3-s4-icon";
   const WEIGHT_POOL = [400];
 
   function tagCard(presetId, card) {
