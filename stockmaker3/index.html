@@ -723,13 +723,12 @@ button.secondary{ background:#0c1220; }
 .sm3-s7{ background:#fff; border:1px solid #f0f0f0; border-top:6px solid #093687; box-shadow:0 4px 14px rgba(0,0,0,.1); }
 .sm3-s7-head{ background:#093687; color:#fff; padding:12px; font-size:14px; font-weight:700; display:flex; justify-content:space-between; }
 .sm3-s7-name-row{ padding:16px; border-bottom:1px solid #f0f0f0; display:flex; justify-content:space-between; align-items:center; }
-.sm3-s7-name{ font-size:18px; font-weight:900; color:#333; }
-.sm3-s7-krw{ font-size:12px; color:#999; }
+.sm3-s7-name{ font-size:18px; font-weight:900 !important; color:#333; }
 .sm3-s7-grid{ padding:16px; display:grid; grid-template-columns:1fr 1fr; row-gap:6px; }
 .sm3-s7-cell{ display:flex; flex-direction:column; }
 .sm3-s7-cell.right{ align-items:flex-end; }
 .sm3-s7-cell label{ font-size:12px; color:#999; margin-bottom:4px; }
-.sm3-s7-cell span{ font-size:20px; font-weight:900; color:#ff3b30; }
+.sm3-s7-cell span{ font-size:20px; font-weight:900; color:#c81e1e; }
 .sm3-s7-cell span.sm3-sub{ font-size:16px; font-weight:700; color:#555; }
 
 /* Card 8: 메리츠 스타일 */
@@ -781,7 +780,7 @@ button.secondary{ background:#0c1220; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 21일 - 11</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 22일 - 2</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1233,7 +1232,7 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 21일 - 11"></script>
+    <script src="../app.js?v=2026년 9월 22일 - 2"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1365,7 +1364,7 @@ button.secondary{ background:#0c1220; }
         </div>`;
       case 7:
         return `<div class="sm3-card sm3-s7">
-          <div class="sm3-s7-name-row"><span class="sm3-s7-name">${d.name}</span><span class="sm3-s7-krw">KRW</span></div>
+          <div class="sm3-s7-name-row"><span class="sm3-s7-name">${d.name}</span></div>
           <div class="sm3-s7-grid">
             <div class="sm3-s7-cell"><label>수익률</label><span>+${pct(d.rate)}%</span></div>
             <div class="sm3-s7-cell right"><label>평가손익</label><span>+${fmt(d.amount)}</span></div>
