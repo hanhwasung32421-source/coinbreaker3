@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 22일 - 6";
+  const BUILD_VERSION = "2026년 9월 22일 - 5";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -18,9 +18,6 @@
   const INDEPENDENT_PROFILE_PAGES = [...MAKER_LIKE_PAGES, ...SUPPLY_LIKE_PAGES];
 
   function getSupabaseRowId() {
-    // 별도의 "OO 전용 컨트롤" 페이지(예: makercontrol)는 폴더 경로와 무관하게
-    // 특정 row만 편집하도록, app.js를 불러오기 전에 window.CB3_FORCE_ROW를 지정합니다.
-    if (typeof window.CB3_FORCE_ROW === "string" && window.CB3_FORCE_ROW) return window.CB3_FORCE_ROW;
     const p = String(location.pathname || "").toLowerCase();
     const seg = (p.match(/\/([^\/]+)\/?(?:index\.html)?$/) || [])[1] || "";
     if (INDEPENDENT_PROFILE_PAGES.includes(seg)) return seg;
