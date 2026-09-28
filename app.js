@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 22일 - 7";
+  const BUILD_VERSION = "2026년 9월 22일 - 8";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -90,6 +90,7 @@
     reset: document.getElementById("btnReset"),
     cloudLoad: document.getElementById("btnCloudLoad"),
     cloudSave: document.getElementById("btnCloudSave"),
+    topSave: document.getElementById("btnTopSave"),
     zoomIn: document.getElementById("btnZoomIn"),
     zoomOut: document.getElementById("btnZoomOut"),
     shiftUp: document.getElementById("btnShiftUp"),
@@ -1685,6 +1686,7 @@
         keepalive,
       });
       if (!res.ok) throw new Error(`save failed: ${res.status}`);
+      if (rowId === "main") notifySharedLayoutMayHaveChanged();
       if (!silent) showToastFor("클라우드 저장됨", 1000);
     } catch (e) {
       console.error(e);
@@ -1710,7 +1712,8 @@
   //  수치 조정/문구/프리셋 등 프로필별 값도 동기화하지 않습니다 -- 그건 각
   //  페이지/컴퓨터마다 독립적으로 유지되어야 하는 값입니다.)
   let lastSharedLayoutSnapshot = null;
-  let sharedLayoutPollTimer = null;
+  let sharedLayoutPollingEnabled = false;
+  let sharedLayoutChannel = null;
 
   function snapshotSharedLayout(cardStyles, bgState, crop) {
     return JSON.stringify({ cardCustomStyles: cardStyles || {}, bg: bgState || {}, cropCfg: crop || {} });
@@ -1754,9 +1757,35 @@
     }
   }
 
+  // 일정 주기로 계속 확인하는 대신, "바뀌었을 가능성이 있는 시점"에만 딱
+  // 한 번씩 확인합니다: 이 탭으로 다시 돌아왔을 때(다른 탭/앱에 가 있다가
+  // 돌아오는 순간)와, 다른 탭에서 방금 저장했다는 신호를 받았을 때뿐입니다.
+  // 고정 주기 폴링을 없애서 탭을 켜두기만 해도 계속 나가던 요청을 없앱니다.
+  function onSharedLayoutVisibilityChange() {
+    if (!sharedLayoutPollingEnabled) return;
+    if (document.visibilityState === "visible") pollSharedLayoutFromCloud();
+  }
+
+  // 같은 브라우저의 다른 탭이 방금 저장했다는 걸 알려주면(BroadcastChannel),
+  // Supabase에 새로 물어보지 않고도 바로 확인할 타이밍을 압니다.
+  function notifySharedLayoutMayHaveChanged() {
+    try {
+      sharedLayoutChannel?.postMessage("changed");
+    } catch {
+      // BroadcastChannel 미지원 브라우저는 조용히 무시합니다(탭 복귀 시 폴링으로 커버됨).
+    }
+  }
+
   function startSharedLayoutPolling() {
-    if (sharedLayoutPollTimer || !cloudConfigured()) return;
-    sharedLayoutPollTimer = setInterval(pollSharedLayoutFromCloud, 5000);
+    if (sharedLayoutPollingEnabled || !cloudConfigured()) return;
+    sharedLayoutPollingEnabled = true;
+    document.addEventListener("visibilitychange", onSharedLayoutVisibilityChange);
+    if (typeof BroadcastChannel === "function") {
+      sharedLayoutChannel = new BroadcastChannel("cb3-shared-layout");
+      sharedLayoutChannel.addEventListener("message", () => {
+        if (document.visibilityState === "visible") pollSharedLayoutFromCloud();
+      });
+    }
   }
 
   function fillCropUiFromCfg() {
@@ -2579,6 +2608,12 @@
     }
     if (els.cloudLoad) els.cloudLoad.addEventListener("click", cloudLoad);
     if (els.cloudSave) els.cloudSave.addEventListener("click", cloudSaveNow);
+    if (els.topSave) {
+      els.topSave.addEventListener("click", () => {
+        clearTimeout(cloudSaveTimer);
+        cloudSaveNow();
+      });
+    }
     if (els.generate) els.generate.addEventListener("click", usesFullCardGenerate() ? doGenerate : runPreset0Action);
     if (els.downloadZip) els.downloadZip.addEventListener("click", downloadZip);
     if (els.reroll) {
