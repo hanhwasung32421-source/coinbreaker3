@@ -641,14 +641,8 @@ html,body{ overflow:hidden; }
 /* 컨트롤 패널: 스크롤바가 생겼을 때의 폭/위치를 항상 유지(스크롤바 자리를 미리 확보)하고,
    스크롤바 자체는 투명하게 숨깁니다. 내용이 길어지면 마우스 휠 스크롤은 그대로 동작합니다. */
 .controls{ overflow-y:auto; scrollbar-gutter:stable; scrollbar-color:transparent transparent; }
-/* 프리셋 버튼 글씨/크기는 coinbreaker3(breaker)와 동일. 열 폭을 breaker의 실제 계산값(1/64px 단위)과 똑같이 고정하고,
-   이미지 서치용 앵커로 글씨 왼쪽에 별 모양(☆) 표시를 넣습니다. 표시는 absolute라 글씨 위치에는 영향이 없습니다. */
+/* 프리셋 열 폭을 breaker의 실제 계산값(1/64px 단위)과 똑같이 고정 */
 .preset-grid{ grid-template-columns:94.59375px 94.59375px 94.609375px 94.59375px 94.59375px; }
-.preset-btn{ position:relative; }
-.preset-btn::before{
-  content:""; position:absolute; left:6px; top:50%; width:7px; height:7px; margin-top:-3px; background:#e7eefc;
-  clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
-}
 /* 프리셋 문구 위 투명 복사 버튼 (문구가 생길 때 함께 생성됨) */
 .preset-caption{ position:relative; }
 .preset-caption .sm3-cap-copy{
@@ -804,7 +798,7 @@ html,body{ overflow:hidden; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 29일 - 6</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 29일 - 7</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -841,11 +835,11 @@ html,body{ overflow:hidden; }
         <div class="preset-wrap">
           <div class="preset-title">프리셋(수익금 만원 범위)</div>
           <div class="preset-grid">
-            <button class="secondary preset-btn" type="button" data-preset="1" data-pmin="50" data-pmax="100">프리셋1</button>
-            <button class="secondary preset-btn" type="button" data-preset="2" data-pmin="100" data-pmax="200">프리셋2</button>
-            <button class="secondary preset-btn" type="button" data-preset="3" data-pmin="300" data-pmax="400">프리셋3</button>
-            <button class="secondary preset-btn" type="button" data-preset="4" data-pmin="300" data-pmax="400">프리셋4</button>
-            <button class="secondary preset-btn" type="button" data-preset="5" data-pmin="500" data-pmax="700">프리셋5</button>
+            <button class="secondary preset-btn" type="button" data-preset="1" data-pmin="50" data-pmax="100">프리셋1★</button>
+            <button class="secondary preset-btn" type="button" data-preset="2" data-pmin="100" data-pmax="200">프리셋2♥</button>
+            <button class="secondary preset-btn" type="button" data-preset="3" data-pmin="300" data-pmax="400">프리셋3◆</button>
+            <button class="secondary preset-btn" type="button" data-preset="4" data-pmin="300" data-pmax="400">프리셋4▲</button>
+            <button class="secondary preset-btn" type="button" data-preset="5" data-pmin="500" data-pmax="700">프리셋5■</button>
 
             <div class="preset-caption" data-preset="1"></div>
             <div class="preset-caption" data-preset="2"></div>
@@ -853,11 +847,11 @@ html,body{ overflow:hidden; }
             <div class="preset-caption" data-preset="4"></div>
             <div class="preset-caption" data-preset="5"></div>
 
-            <button class="secondary preset-btn" type="button" data-preset="6" data-pmin="1000" data-pmax="2000">프리셋6</button>
-            <button class="secondary preset-btn" type="button" data-preset="7" data-pmin="1500" data-pmax="2500">프리셋7</button>
-            <button class="secondary preset-btn" type="button" data-preset="8" data-pmin="2500" data-pmax="3500">프리셋8</button>
-            <button class="secondary preset-btn" type="button" data-preset="9" data-pmin="3500" data-pmax="4500">프리셋9</button>
-            <button class="secondary preset-btn" type="button" data-preset="10" data-pmin="5000" data-pmax="6000">프리셋10</button>
+            <button class="secondary preset-btn" type="button" data-preset="6" data-pmin="1000" data-pmax="2000">프리셋6●</button>
+            <button class="secondary preset-btn" type="button" data-preset="7" data-pmin="1500" data-pmax="2500">프리셋7♠</button>
+            <button class="secondary preset-btn" type="button" data-preset="8" data-pmin="2500" data-pmax="3500">프리셋8♣</button>
+            <button class="secondary preset-btn" type="button" data-preset="9" data-pmin="3500" data-pmax="4500">프리셋9▼</button>
+            <button class="secondary preset-btn" type="button" data-preset="10" data-pmin="5000" data-pmax="6000">프리셋10☆</button>
 
             <div class="preset-caption" data-preset="6"></div>
             <div class="preset-caption" data-preset="7"></div>
@@ -1256,7 +1250,7 @@ html,body{ overflow:hidden; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 29일 - 6"></script>
+    <script src="../app.js?v=2026년 9월 29일 - 7"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
