@@ -796,7 +796,7 @@ html,body{ overflow:hidden; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 29일 - 4</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 29일 - 5</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1248,7 +1248,7 @@ html,body{ overflow:hidden; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 29일 - 4"></script>
+    <script src="../app.js?v=2026년 9월 29일 - 5"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1711,10 +1711,9 @@ html,body{ overflow:hidden; }
   }
 
   // 문구 위에 투명 복사 버튼을 올립니다: 위쪽은 바로 위 프리셋 버튼 아래 끝, 아래쪽은 문구 마지막 글자 끝까지.
-  function attachCaptionCopyButton(caption, presetId, phrase) {
+  function attachCaptionCopyButton(caption, presetBtn, phrase) {
     caption.querySelectorAll(".sm3-cap-copy").forEach((b) => b.remove());
-    const textNode = caption.firstChild;
-    const presetBtn = document.querySelector(`.preset-btn[data-preset="${presetId}"]`);
+    const textNode = [...caption.childNodes].find((n) => n.nodeType === 3);
     if (!phrase || !textNode || !presetBtn) return;
     const cr = caption.getBoundingClientRect();
     const br = presetBtn.getBoundingClientRect();
@@ -1724,6 +1723,7 @@ html,body{ overflow:hidden; }
     const b = document.createElement("button");
     b.type = "button";
     b.className = "sm3-cap-copy";
+    b.dataset.phrase = phrase;
     b.setAttribute("aria-label", "문구 복사");
     b.setAttribute("data-html2canvas-ignore", "true");
     b.style.top = `${br.bottom - cr.top}px`;
@@ -1748,7 +1748,24 @@ html,body{ overflow:hidden; }
     }
     lastPresetPhrase = phrase;
     caption.textContent = phrase;
-    attachCaptionCopyButton(caption, presetId, phrase);
+    attachCaptionCopyButton(caption, document.querySelector(`.preset-btn[data-preset="${presetId}"]`), phrase);
+  }
+
+  // 프리셋축하 문구는 app.js의 원래 핸들러가 만들고 자동 선택까지 합니다. 그 직후(마이크로태스크)에
+  // 선택을 해제하고 프리셋 문구와 똑같은 투명 복사 버튼을 붙입니다. (app.js는 수정하지 않음)
+  function watchCongratsCaption() {
+    const cap = document.getElementById("presetCongratsCaption");
+    const anchor = document.getElementById("btnPresetCongrats");
+    if (!cap || !anchor) return;
+    const sync = () => {
+      const phrase = [...cap.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join("");
+      const existing = cap.querySelector(".sm3-cap-copy");
+      if (existing && existing.dataset.phrase === phrase) return;
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount && cap.contains(sel.anchorNode)) sel.removeAllRanges();
+      attachCaptionCopyButton(cap, anchor, phrase);
+    };
+    new MutationObserver(sync).observe(cap, { childList: true, characterData: true, subtree: true });
   }
 
   function handlePreset(presetId, btn) {
@@ -1809,6 +1826,7 @@ html,body{ overflow:hidden; }
 
   function init() {
     initModeToggles();
+    watchCongratsCaption();
     const firstBtn = document.querySelector('.preset-btn[data-preset="1"]');
     if (firstBtn) {
       renderPreset("1", firstBtn);
