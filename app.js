@@ -2485,6 +2485,79 @@
     }
   }
 
+  // ---- 프리셋 아래 문구 표시 ----
+  // 기본(다른 페이지): 문구를 표시하고 자동으로 선택(드래그) 상태로 만듭니다.
+  // window.CB3_CAPTION_COPY === true 인 페이지(breaker33): 자동 선택을 하지 않고,
+  // 문구 위에 투명 버튼을 얹어 클릭하면 문구 전체가 클립보드로 복사됩니다.
+  // 투명 버튼은 프리셋 버튼 바로 아래 여백부터 문구 마지막 글자까지 덮습니다.
+  async function copyTextToClipboard(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch {
+      // 아래 폴백으로 진행
+    }
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:fixed; left:-9999px; top:0; opacity:0;";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+
+  function layoutCaptionCopyButton(copyBtn) {
+    const caption = copyBtn.parentElement;
+    const anchor = copyBtn._anchorBtn;
+    const textNode = caption?.firstChild;
+    if (!caption || !anchor || !textNode || textNode.nodeType !== Node.TEXT_NODE) return;
+    const range = document.createRange();
+    range.selectNodeContents(textNode);
+    const textRect = range.getBoundingClientRect();
+    const capRect = caption.getBoundingClientRect();
+    const anchorBottom = anchor.getBoundingClientRect().bottom;
+    copyBtn.style.top = `${anchorBottom - capRect.top}px`;
+    copyBtn.style.height = `${Math.max(0, textRect.bottom - anchorBottom)}px`;
+  }
+
+  function showPresetCaption(caption, phrase, anchorBtn) {
+    if (!caption) return;
+    caption.textContent = phrase;
+    if (window.CB3_CAPTION_COPY === true) {
+      if (!phrase) return;
+      const copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "preset-caption-copy";
+      copyBtn.title = "클릭하면 문구가 복사됩니다";
+      copyBtn.setAttribute("aria-label", "문구 복사");
+      copyBtn._anchorBtn = anchorBtn;
+      copyBtn.addEventListener("click", async () => {
+        const ok = await copyTextToClipboard(phrase);
+        showToastFor(ok ? "문구 복사됨" : "문구 복사 실패", 1200);
+      });
+      caption.appendChild(copyBtn);
+      layoutCaptionCopyButton(copyBtn);
+      return;
+    }
+    const range = document.createRange();
+    range.selectNodeContents(caption);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+  }
+
+  window.addEventListener("resize", () => {
+    document.querySelectorAll(".preset-caption-copy").forEach(layoutCaptionCopyButton);
+  });
+
   function bindPhraseUi() {
     fillPhraseUiFromCfg();
     const onEdit = () => {
@@ -2749,15 +2822,7 @@
           undoPendingBagDraws();
         }
         lastPresetPhrase = phrase;
-        const caption = document.querySelector(`.preset-caption[data-preset="${presetId}"]`);
-        if (caption) {
-          caption.textContent = phrase;
-          const range = document.createRange();
-          range.selectNodeContents(caption);
-          const sel = window.getSelection();
-          sel?.removeAllRanges();
-          sel?.addRange(range);
-        }
+        showPresetCaption(document.querySelector(`.preset-caption[data-preset="${presetId}"]`), phrase, btn);
 
         if (!firstPresetHintShown) {
           firstPresetHintShown = true;
@@ -2792,14 +2857,7 @@
           undoPendingBagDraws();
         }
         lastCongratsPhrase = phrase;
-        if (els.presetCongratsCaption) {
-          els.presetCongratsCaption.textContent = phrase;
-          const range = document.createRange();
-          range.selectNodeContents(els.presetCongratsCaption);
-          const sel = window.getSelection();
-          sel?.removeAllRanges();
-          sel?.addRange(range);
-        }
+        showPresetCaption(els.presetCongratsCaption, phrase, els.presetCongratsBtn);
         showToastFor("축하 문구 생성됨", 1200);
       });
     }
