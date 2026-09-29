@@ -638,6 +638,9 @@ button.secondary{ background:#0c1220; }
 /* 페이지 자체 상하/좌우 스크롤 제거 (컨트롤 패널 안쪽 스크롤은 프리셋 설정 패널을 펼쳤을 때만 필요) */
 html,body{ overflow:hidden; }
 .app{ padding-bottom:0; }
+/* 컨트롤 패널: 스크롤바가 생겼을 때의 폭/위치를 항상 유지(스크롤바 자리를 미리 확보)하고,
+   스크롤바 자체는 투명하게 숨깁니다. 내용이 길어지면 마우스 휠 스크롤은 그대로 동작합니다. */
+.controls{ overflow-y:auto; scrollbar-gutter:stable; scrollbar-color:transparent transparent; }
 .sm3-profit-row{ display:grid; grid-template-columns: 110px 108px 1fr 1fr 1fr; gap:6px; align-items:center; }
 .sm3-mode-toggle{ display:flex; flex-direction:column; gap:2px; font-size:11px; color:rgba(231,238,252,.85); }
 .sm3-mode-toggle label{ display:flex; align-items:center; gap:4px; white-space:nowrap; }
@@ -781,7 +784,7 @@ html,body{ overflow:hidden; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 29일 - 2</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 29일 - 3</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1233,7 +1236,7 @@ html,body{ overflow:hidden; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 29일 - 2"></script>
+    <script src="../app.js?v=2026년 9월 29일 - 3"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
