@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 9월 29일 - 7";
+  const BUILD_VERSION = "2026년 9월 29일 - 8";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -2858,6 +2858,11 @@
         }
         lastCongratsPhrase = phrase;
         showPresetCaption(els.presetCongratsCaption, phrase, els.presetCongratsBtn);
+        // window.CB3_CONGRATS_AUTOCOPY === true 인 페이지(breaker33, stockmaker3): 버튼을 누르는 즉시 문구를 클립보드에 복사합니다.
+        if (window.CB3_CONGRATS_AUTOCOPY === true && phrase) {
+          copyTextToClipboard(phrase).then((ok) => showToastFor(ok ? "축하 문구 복사됨" : "문구 복사 실패", 1200));
+          return;
+        }
         showToastFor("축하 문구 생성됨", 1200);
       });
     }
