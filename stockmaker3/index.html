@@ -802,7 +802,7 @@ html,body{ overflow:hidden; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 30일 - 4</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 30일 - 5</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1255,7 +1255,7 @@ html,body{ overflow:hidden; }
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>window.CB3_CONGRATS_AUTOCOPY = true;</script>
-    <script src="../app.js?v=2026년 9월 30일 - 4"></script>
+    <script src="../app.js?v=2026년 9월 30일 - 5"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1297,7 +1297,14 @@ html,body{ overflow:hidden; }
   function getRate() {
     const rMin = numOr(document.getElementById("inpPercentMin")?.value, 16);
     const rMax = numOr(document.getElementById("inpPercentMax")?.value, 21);
-    return randFloat(Math.min(rMin, rMax), Math.max(rMin, rMax)) || 1;
+    const lo = Math.min(rMin, rMax), hi = Math.max(rMin, rMax);
+    // 소수점 2자리까지만 쓰되 .00(정수)으로 딱 떨어지지 않게 합니다.
+    let cents = Math.round((randFloat(lo, hi) || 1) * 100);
+    if (cents % 100 === 0) {
+      const k = randInt(1, 99);
+      cents = cents + k <= hi * 100 ? cents + k : cents - k;
+    }
+    return Math.max(1, cents) / 100;
   }
 
   function getStockName() {
