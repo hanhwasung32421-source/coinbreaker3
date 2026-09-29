@@ -745,6 +745,10 @@
         else if (pi - 1 >= minI) pi -= 1;
       }
     }
+    // 최소=최대처럼 범위가 한 값뿐이면 위에서 보정할 수 없어 20.00 같은 값이 그대로 나옵니다.
+    // window.CB3_NO_ZERO_DECIMAL === true 인 페이지(breaker33)는 그 경우에도 0.01만 밀어서
+    // 소수점 둘째 자리가 0(.00 포함)인 수익률이 절대 나오지 않게 합니다.
+    if (window.CB3_NO_ZERO_DECIMAL === true && Math.abs(pi) % 10 === 0) pi += 1;
     return pi / 100;
   }
 
