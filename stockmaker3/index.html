@@ -644,7 +644,7 @@ html,body{ overflow:hidden; }
 /* 프리셋 열 폭을 breaker의 실제 계산값(1/64px 단위)과 똑같이 고정 */
 .preset-grid{ grid-template-columns:94.59375px 94.59375px 94.609375px 94.59375px 94.59375px; }
 /* 프리셋 문구 위 투명 복사 버튼 (문구가 생길 때 함께 생성됨) */
-.preset-caption{ position:relative; }
+.preset-caption{ position:relative; min-height:76px; } /* 코멘트 5줄(14.4px×5+패딩4) 자리를 미리 확보해 버튼이 밀리지 않게 함 */
 .preset-caption .sm3-cap-copy{
   position:absolute; left:0; width:100%; margin:0 !important; padding:0 !important;
   border:0 !important; border-radius:0 !important; background:transparent !important;
@@ -798,7 +798,7 @@ html,body{ overflow:hidden; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 29일 - 8</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 30일 - 2</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1190,8 +1190,6 @@ html,body{ overflow:hidden; }
           </details>
         </div>
 
-        <h1>수치 조정</h1>
-
         <div class="grid">
           <label class="span-2">종목명 고정<input id="inpSm3StockName" type="text" placeholder="비우면 15개 종목 중 랜덤 (예: 삼성전자)" /></label>
           <label>수익률 최소<input id="inpPercentMin" type="text" value="16" /></label>
@@ -1251,7 +1249,7 @@ html,body{ overflow:hidden; }
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>window.CB3_CONGRATS_AUTOCOPY = true;</script>
-    <script src="../app.js?v=2026년 9월 29일 - 8"></script>
+    <script src="../app.js?v=2026년 9월 30일 - 2"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
