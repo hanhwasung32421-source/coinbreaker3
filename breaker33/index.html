@@ -665,7 +665,7 @@ button.secondary{ background:#0c1220; }
           >저장</button
         >
       </div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 29일 - 2</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 29일 - 3</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1097,12 +1097,14 @@ button.secondary{ background:#0c1220; }
           </label>
           <label>진입가격
             <div class="dual-input">
-              <input id="inpEntry" type="text" value="185.65" />
+              <div style="display:flex; gap:8px; align-items:stretch;">
+                <input id="inpEntry" type="text" value="185.65" style="flex:1; min-width:0;" />
+                <button id="btnEntryRandToggle" class="secondary" type="button" aria-expanded="false" style="white-space:nowrap; flex:0 0 auto;">진입가격 랜덤 설정 ▸</button>
+              </div>
               <input id="inpEntryReal" type="text" value="185.65" disabled style="display:none;" />
             </div>
           </label>
-          <details class="phrase-settings span-2">
-            <summary>진입가격 랜덤 설정</summary>
+          <div id="entryRandPanel" class="phrase-settings span-2" style="display:none; gap:10px;">
             <div class="phrase-help">
               프리셋/생성 시 선택한 자리까지는 기준값에서 랜덤하게 바뀌고, 그 뒤 자리는 확률에 따라 랜덤 숫자 또는 `000`으로 채웁니다.
             </div>
@@ -1122,9 +1124,11 @@ button.secondary{ background:#0c1220; }
                 <input id="inpExitZeroProb" type="number" min="0" max="100" step="1" value="0" />
               </label>
             </div>
-          </details>
-          <label>종료가격(자동)<input id="inpExit" type="text" value="0.00000" disabled /></label>
-          <label>레버리지<input id="inpLeverage" type="text" value="100x" /></label>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <label>종료가격(자동)<input id="inpExit" type="text" value="0.00000" disabled /></label>
+              <label>레버리지<input id="inpLeverage" type="text" value="100x" /></label>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1136,6 +1140,19 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 29일 - 2"></script>
+    <script src="../app.js?v=2026년 9월 29일 - 3"></script>
+    <script>
+      (function () {
+        var btn = document.getElementById("btnEntryRandToggle");
+        var panel = document.getElementById("entryRandPanel");
+        if (!btn || !panel) return;
+        btn.addEventListener("click", function () {
+          var open = panel.style.display === "none";
+          panel.style.display = open ? "grid" : "none";
+          btn.setAttribute("aria-expanded", open ? "true" : "false");
+          btn.textContent = open ? "진입가격 랜덤 설정 ▾" : "진입가격 랜덤 설정 ▸";
+        });
+      })();
+    </script>
   </body>
 </html>
