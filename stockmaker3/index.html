@@ -644,6 +644,10 @@ html,body{ overflow:hidden; }
 /* 프리셋 열 폭을 breaker의 실제 계산값(1/64px 단위)과 똑같이 고정 */
 .preset-grid{ grid-template-columns:94.59375px 94.59375px 94.609375px 94.59375px 94.59375px; }
 /* 프리셋 문구 위 투명 복사 버튼 (문구가 생길 때 함께 생성됨) */
+/* 설정 패널 3개 버튼을 한 줄로 배치. 펼친 패널은 한 줄 전체 폭을 차지 */
+.sm3-details-row{ display:flex; flex-wrap:wrap; align-items:flex-start; gap:6px 14px; }
+.sm3-details-row > details{ flex:0 0 auto; }
+.sm3-details-row > details[open]{ flex:1 0 100%; }
 .preset-caption{ position:relative; min-height:76px; } /* 코멘트 5줄(14.4px×5+패딩4) 자리를 미리 확보해 버튼이 밀리지 않게 함 */
 .preset-caption .sm3-cap-copy{
   position:absolute; left:0; width:100%; margin:0 !important; padding:0 !important;
@@ -798,7 +802,7 @@ html,body{ overflow:hidden; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 30일 - 2</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 30일 - 3</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -863,6 +867,7 @@ html,body{ overflow:hidden; }
             <div id="presetCongratsCaption" class="preset-caption" style="grid-column:5;"></div>
           </div>
 
+          <div class="sm3-details-row">
           <details class="phrase-settings">
             <summary>프리셋 문구(자동 생성) 조합 설정</summary>
             <div class="phrase-help">
@@ -1188,6 +1193,7 @@ html,body{ overflow:hidden; }
               </div>
             </div>
           </details>
+          </div>
         </div>
 
         <div class="grid">
@@ -1249,7 +1255,7 @@ html,body{ overflow:hidden; }
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>window.CB3_CONGRATS_AUTOCOPY = true;</script>
-    <script src="../app.js?v=2026년 9월 30일 - 2"></script>
+    <script src="../app.js?v=2026년 9월 30일 - 3"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
