@@ -192,8 +192,12 @@ button.secondary{ background:#0c1220; }
 .span-2{ grid-column:1 / -1; }
 .preset-grid{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
 .preset-btn{ width:100%; white-space:nowrap; }
-.preset-caption{ min-height:34px; padding:2px 4px; font-size:12px; line-height:1.2; color:rgba(231,238,252,.85); display:flex; align-items:center; justify-content:center; text-align:center; user-select:text; position:relative; }
+.preset-caption{ min-height:76px; padding:2px 4px; font-size:12px; line-height:1.2; color:rgba(231,238,252,.85); display:flex; align-items:center; justify-content:center; text-align:center; user-select:text; position:relative; }
 /* 문구 위에 얹는 투명 복사 버튼(위치/높이는 app.js가 프리셋 버튼 아래~마지막 글자로 계산) */
+/* 설정 패널 3개 버튼을 한 줄로 배치. 펼친 패널은 한 줄 전체 폭을 차지 */
+.sm3-details-row{ display:flex; flex-wrap:wrap; align-items:flex-start; gap:6px 14px; }
+.sm3-details-row > details{ flex:0 0 auto; }
+.sm3-details-row > details[open]{ flex:1 0 100%; }
 .preset-caption-copy{ position:absolute; left:0; right:0; margin:0; padding:0; border:0; border-radius:0; background:transparent; cursor:pointer; z-index:2; }
 
 .sidepanel{
@@ -776,6 +780,7 @@ button.secondary{ background:#0c1220; }
             <div id="presetCongratsCaption" class="preset-caption" style="grid-column:5;"></div>
           </div>
 
+          <div class="sm3-details-row">
           <details class="phrase-settings">
             <summary>프리셋 문구(자동 생성) 조합 설정</summary>
             <div class="phrase-help">
@@ -1082,9 +1087,8 @@ button.secondary{ background:#0c1220; }
               </div>
             </div>
           </details>
+          </div>
         </div>
-
-        <h1>수치 조정</h1>
 
         <div class="grid">
           <label>수익률 최소<input id="inpPercentMin" type="text" value="16" /></label>
