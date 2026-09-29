@@ -641,6 +641,13 @@ html,body{ overflow:hidden; }
 /* 컨트롤 패널: 스크롤바가 생겼을 때의 폭/위치를 항상 유지(스크롤바 자리를 미리 확보)하고,
    스크롤바 자체는 투명하게 숨깁니다. 내용이 길어지면 마우스 휠 스크롤은 그대로 동작합니다. */
 .controls{ overflow-y:auto; scrollbar-gutter:stable; scrollbar-color:transparent transparent; }
+/* 프리셋 문구 위 투명 복사 버튼 (문구가 생길 때 함께 생성됨) */
+.preset-caption{ position:relative; }
+.preset-caption .sm3-cap-copy{
+  position:absolute; left:0; width:100%; margin:0 !important; padding:0 !important;
+  border:0 !important; border-radius:0 !important; background:transparent !important;
+  color:transparent !important; box-shadow:none !important; cursor:pointer; z-index:2;
+}
 /* 프리셋 버튼 폭을 스크롤바가 있을 때의 크기(94.6px)로 직접 고정합니다.
    브라우저/OS마다 스크롤바 폭이 달라도(0px~17px) 버튼 크기가 변하지 않습니다. */
 @media (min-width:1161px){
@@ -1685,7 +1692,50 @@ html,body{ overflow:hidden; }
 
   let lastPresetPhrase = "";
 
-  // 원래 프리셋 핸들러가 하던 "프리셋 아래 문구 생성 + 선택(복사 편의)"을 대신 수행합니다.
+  function copyText(text) {
+    const fallback = () => {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0;";
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch {}
+      ta.remove();
+      return ok;
+    };
+    if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(() => true).catch(() => fallback());
+    }
+    return Promise.resolve(fallback());
+  }
+
+  // 문구 위에 투명 복사 버튼을 올립니다: 위쪽은 바로 위 프리셋 버튼 아래 끝, 아래쪽은 문구 마지막 글자 끝까지.
+  function attachCaptionCopyButton(caption, presetId, phrase) {
+    caption.querySelectorAll(".sm3-cap-copy").forEach((b) => b.remove());
+    const textNode = caption.firstChild;
+    const presetBtn = document.querySelector(`.preset-btn[data-preset="${presetId}"]`);
+    if (!phrase || !textNode || !presetBtn) return;
+    const cr = caption.getBoundingClientRect();
+    const br = presetBtn.getBoundingClientRect();
+    const rg = document.createRange();
+    rg.selectNodeContents(textNode);
+    const tr = rg.getBoundingClientRect();
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "sm3-cap-copy";
+    b.setAttribute("aria-label", "문구 복사");
+    b.setAttribute("data-html2canvas-ignore", "true");
+    b.style.top = `${br.bottom - cr.top}px`;
+    b.style.height = `${Math.max(1, tr.bottom - br.bottom)}px`;
+    b.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      copyText(phrase).then((ok) => showToast(ok ? "문구 복사됨" : "문구 복사 실패"));
+    });
+    caption.appendChild(b);
+  }
+
+  // 원래 프리셋 핸들러가 하던 "프리셋 아래 문구 생성"을 대신 수행합니다. (자동 선택 없음, 투명 버튼 클릭으로 복사)
   function fillPresetCaption(presetId, rate) {
     const api = window.__cbPhraseApi;
     const caption = document.querySelector(`.preset-caption[data-preset="${presetId}"]`);
@@ -1698,11 +1748,7 @@ html,body{ overflow:hidden; }
     }
     lastPresetPhrase = phrase;
     caption.textContent = phrase;
-    const range = document.createRange();
-    range.selectNodeContents(caption);
-    const sel = window.getSelection();
-    sel?.removeAllRanges();
-    sel?.addRange(range);
+    attachCaptionCopyButton(caption, presetId, phrase);
   }
 
   function handlePreset(presetId, btn) {
