@@ -802,7 +802,7 @@ html,body{ overflow:hidden; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 19일 - 2</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 19일 - 3</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1255,7 +1255,7 @@ html,body{ overflow:hidden; }
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>window.CB3_CONGRATS_AUTOCOPY = true;</script>
-    <script src="../app.js?v=2026년 10월 19일 - 2"></script>
+    <script src="../app.js?v=2026년 10월 19일 - 3"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1315,28 +1315,29 @@ html,body{ overflow:hidden; }
   function generateStockData(presetId, btn) {
     const mode = getPresetMode(presetId);
     const rate = getRate();
-    let amount, principal;
+    // 위쪽 "전체 배율(%)"은 어느 모드든 계산이 다 끝난 마지막 수익금에 곱합니다. (예: 200 × 10% = 20)
+    const scale = Math.max(0, numOr(document.getElementById("inpPresetProfitScalePct")?.value, 100)) / 100;
+    let rawAmount, principal;
 
     if (mode === "principal") {
       const principalEl = document.getElementById(`inpPresetProfitInvest${presetId}`);
       const fixedPrincipal = principalEl && principalEl.value.trim() !== "" ? numOr(principalEl.value, null) : null;
       principal = Math.max(10000, Math.round(fixedPrincipal != null ? fixedPrincipal : 10000000));
-      amount = withRandomNonZeroLastDigit(Math.max(1, Math.round(principal * (rate / 100))));
+      rawAmount = principal * (rate / 100);
     } else {
       const { pmin, pmax } = getPresetRange(presetId, btn);
       const lo = Math.min(pmin, pmax), hi = Math.max(pmin, pmax);
-      // 위쪽 "전체 배율(%)"을 범위에 곱합니다. (예: 100~300 × 10% = 10~30)
-      const scale = Math.max(0, numOr(document.getElementById("inpPresetProfitScalePct")?.value, 100)) / 100;
-      const loWon = Math.round(lo * 10000 * scale), hiWon = Math.round(hi * 10000 * scale);
       // 만원 단위가 아니라 원 단위로 범위 전체에서 랜덤을 뽑아 끝자리가 자연스럽게 흩어지게 합니다.
-      amount = withRandomNonZeroLastDigit(randInt(loWon, hiWon));
-      principal = Math.max(10000, Math.round(amount / (rate / 100)));
+      rawAmount = randInt(lo * 10000, hi * 10000);
 
       const minEl = document.getElementById("inpProfitMin");
       const maxEl = document.getElementById("inpProfitMax");
-      if (minEl) minEl.value = String(Math.round(lo * scale * 100) / 100);
-      if (maxEl) maxEl.value = String(Math.round(hi * scale * 100) / 100);
+      if (minEl) minEl.value = String(lo);
+      if (maxEl) maxEl.value = String(hi);
     }
+
+    const amount = withRandomNonZeroLastDigit(Math.max(1, Math.round(rawAmount * scale)));
+    if (mode !== "principal") principal = Math.max(10000, Math.round(amount / (rate / 100)));
 
     const name = getStockName();
     const date = todayStr();
