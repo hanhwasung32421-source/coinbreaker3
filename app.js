@@ -2138,7 +2138,11 @@
     const exitRect = getRectForSelector("#txtExit") || profitRect;
 
     // 시작점: 퍼센트 왼쪽 위 기준으로 랜덤
-    const startPadX = randInt(0, Math.max(0, Math.round(cropCfg?.startPadXMax ?? DEFAULT_CROP_CFG.startPadXMax)));
+    // window.CB3_CROP_MIN_LEFT_PAD(px)가 지정된 페이지(breaker33)는 왼쪽 여백이 그보다 작게
+    // (글씨가 크롭 왼쪽 끝에 딱 붙게) 나오지 않도록 최소 여백을 보장합니다.
+    const minLeftPad = Math.max(0, Math.round(Number(window.CB3_CROP_MIN_LEFT_PAD) || 0));
+    const startPadXMaxCfg = Math.max(0, Math.round(cropCfg?.startPadXMax ?? DEFAULT_CROP_CFG.startPadXMax));
+    const startPadX = randInt(minLeftPad, Math.max(minLeftPad, startPadXMaxCfg));
     const startPadY = randInt(0, Math.max(0, Math.round(cropCfg?.startPadYMax ?? DEFAULT_CROP_CFG.startPadYMax)));
     let x = Math.max(0, Math.floor(percentRect.x - startPadX));
     let y = Math.max(0, Math.floor(percentRect.y - startPadY));
