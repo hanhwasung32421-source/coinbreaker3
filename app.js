@@ -499,6 +499,7 @@
     "widthMinPct": 50,
     "bottomPadMax": 36,
     "bottomPadMin": 12,
+    "startPadXMin": 12,
     "startPadXMax": 28,
     "startPadYMax": 88,
     "fullCaptureProb": 10
@@ -618,9 +619,10 @@
     const profitRect = getRectForSelectors(["#txtProfit"]) || getRectForSelector("#txtProfit") || percentRect;
     const exitRect = getRectForSelector("#txtExit") || profitRect;
 
-    const startPadXMax = Math.max(0, Math.round(cropCfg?.startPadXMax ?? DEFAULT_CROP_CFG.startPadXMax));
+    const startPadXMin = Math.max(0, Math.round(Number(cropCfg?.startPadXMin ?? DEFAULT_CROP_CFG.startPadXMin) || 0));
+    const startPadXMax = Math.max(startPadXMin, Math.round(cropCfg?.startPadXMax ?? DEFAULT_CROP_CFG.startPadXMax));
     const startPadYMax = Math.max(0, Math.round(cropCfg?.startPadYMax ?? DEFAULT_CROP_CFG.startPadYMax));
-    const x = Math.max(0, Math.floor(percentRect.x - Math.round(startPadXMax / 2)));
+    const x = Math.max(0, Math.floor(percentRect.x - Math.round((startPadXMin + startPadXMax) / 2)));
     const y = Math.max(0, Math.floor(percentRect.y - Math.round(startPadYMax / 2)));
 
     const widthMinRatio = clamp((cropCfg?.widthMinPct ?? DEFAULT_CROP_CFG.widthMinPct) / 100, 0.01, 1);
@@ -951,6 +953,7 @@
       fullCaptureProb: clamp(cc.fullCaptureProb, 0, 100),
       widthMinPct: clamp(cc.widthMinPct, 1, 100),
       widthMaxPct: clamp(cc.widthMaxPct, clamp(cc.widthMinPct, 1, 100), 100),
+      startPadXMin: Math.max(0, Math.round(Number(cc.startPadXMin ?? DEFAULT_CROP_CFG.startPadXMin) || 0)),
       startPadXMax: Math.max(0, Math.round(Number(cc.startPadXMax) || 0)),
       startPadYMax: Math.max(0, Math.round(Number(cc.startPadYMax) || 0)),
       bottomPadMin: Math.max(0, Math.round(Number(cc.bottomPadMin) || 0)),
@@ -1800,6 +1803,7 @@
     setVal("inpCropFullCaptureProb", clamp(cropCfg.fullCaptureProb, 0, 100));
     setVal("inpCropWidthMinPct", clamp(cropCfg.widthMinPct, 1, 100));
     setVal("inpCropWidthMaxPct", clamp(cropCfg.widthMaxPct, 1, 100));
+    setVal("inpCropStartPadXMin", Math.max(0, Math.round(cropCfg.startPadXMin ?? DEFAULT_CROP_CFG.startPadXMin)));
     setVal("inpCropStartPadXMax", Math.max(0, Math.round(cropCfg.startPadXMax)));
     setVal("inpCropStartPadYMax", Math.max(0, Math.round(cropCfg.startPadYMax)));
     setVal("inpCropBottomPadMin", Math.max(0, Math.round(cropCfg.bottomPadMin)));
@@ -1828,6 +1832,7 @@
       fullCaptureProb: clamp(num("inpCropFullCaptureProb", DEFAULT_CROP_CFG.fullCaptureProb), 0, 100),
       widthMinPct,
       widthMaxPct,
+      startPadXMin: Math.max(0, Math.round(num("inpCropStartPadXMin", DEFAULT_CROP_CFG.startPadXMin))),
       startPadXMax: Math.max(0, Math.round(num("inpCropStartPadXMax", DEFAULT_CROP_CFG.startPadXMax))),
       startPadYMax: Math.max(0, Math.round(num("inpCropStartPadYMax", DEFAULT_CROP_CFG.startPadYMax))),
       bottomPadMin,
@@ -2138,9 +2143,9 @@
     const exitRect = getRectForSelector("#txtExit") || profitRect;
 
     // 시작점: 퍼센트 왼쪽 위 기준으로 랜덤
-    // window.CB3_CROP_MIN_LEFT_PAD(px)가 지정된 페이지(breaker33)는 왼쪽 여백이 그보다 작게
-    // (글씨가 크롭 왼쪽 끝에 딱 붙게) 나오지 않도록 최소 여백을 보장합니다.
-    const minLeftPad = Math.max(0, Math.round(Number(window.CB3_CROP_MIN_LEFT_PAD) || 0));
+    // 컨트롤의 "왼쪽 시작 여백 최소"는 항상 우선합니다: 최대값이 더 작게 설정돼도
+    // 왼쪽 여백은 최소값 미만으로 내려가지 않습니다(글씨가 크롭 왼쪽 끝에 딱 붙는 것 방지).
+    const minLeftPad = Math.max(0, Math.round(Number(cropCfg?.startPadXMin ?? DEFAULT_CROP_CFG.startPadXMin) || 0));
     const startPadXMaxCfg = Math.max(0, Math.round(cropCfg?.startPadXMax ?? DEFAULT_CROP_CFG.startPadXMax));
     const startPadX = randInt(minLeftPad, Math.max(minLeftPad, startPadXMaxCfg));
     const startPadY = randInt(0, Math.max(0, Math.round(cropCfg?.startPadYMax ?? DEFAULT_CROP_CFG.startPadYMax)));
@@ -2628,6 +2633,7 @@
       "inpCropFullCaptureProb",
       "inpCropWidthMinPct",
       "inpCropWidthMaxPct",
+      "inpCropStartPadXMin",
       "inpCropStartPadXMax",
       "inpCropStartPadYMax",
       "inpCropBottomPadMin",
