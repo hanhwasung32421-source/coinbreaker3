@@ -627,7 +627,7 @@ button.secondary{ background:#0c1220; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Coin Maker2</div>
-            <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 22일 - 6</span></div>
+            <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 22일 - 7</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1015,11 +1015,11 @@ button.secondary{ background:#0c1220; }
             <button class="secondary preset-btn" type="button" data-preset="3">프리셋3</button>
             <button class="secondary preset-btn" type="button" data-preset="4">프리셋4</button>
             <button class="secondary preset-btn" type="button" data-preset="5">프리셋5</button>
-            <input id="inpPresetProfitInvest1" type="text" inputmode="decimal" placeholder="투자금(만원)" />
-            <input id="inpPresetProfitInvest2" type="text" inputmode="decimal" placeholder="투자금(만원)" />
-            <input id="inpPresetProfitInvest3" type="text" inputmode="decimal" placeholder="투자금(만원)" />
-            <input id="inpPresetProfitInvest4" type="text" inputmode="decimal" placeholder="투자금(만원)" />
-            <input id="inpPresetProfitInvest5" type="text" inputmode="decimal" placeholder="투자금(만원)" />
+            <input id="inpMaker2Invest1" type="text" inputmode="decimal" placeholder="투자금(만원)" />
+            <input id="inpMaker2Invest2" type="text" inputmode="decimal" placeholder="투자금(만원)" />
+            <input id="inpMaker2Invest3" type="text" inputmode="decimal" placeholder="투자금(만원)" />
+            <input id="inpMaker2Invest4" type="text" inputmode="decimal" placeholder="투자금(만원)" />
+            <input id="inpMaker2Invest5" type="text" inputmode="decimal" placeholder="투자금(만원)" />
           </div>
         </div>
 
@@ -1083,8 +1083,43 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script>window.CB3_INVEST_INPUT_ID = "inpInvest";</script>
-    <script src="../app.js?v=2026년 10월 22일 - 6"></script>
+    <script>
+window.CB3_INVEST_INPUT_ID = "inpInvest";
+window.CB3_PRESET_INVEST_PREFIX = "inpMaker2Invest";
+/* 프리셋 투자금(1~5)은 Supabase가 아니라 이 컴퓨터의 쿠키에만 저장합니다. */
+(() => {
+  const COOKIE = "cb3_maker2_preset_invest";
+  const ids = [1, 2, 3, 4, 5].map((n) => "inpMaker2Invest" + n);
+  const readCookie = () => {
+    try {
+      const m = document.cookie.split("; ").find((c) => c.startsWith(COOKIE + "="));
+      const arr = m ? JSON.parse(decodeURIComponent(m.slice(COOKIE.length + 1))) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch { return []; }
+  };
+  const writeCookie = () => {
+    try {
+      const vals = ids.map((id) => String(document.getElementById(id).value || ""));
+      document.cookie = COOKIE + "=" + encodeURIComponent(JSON.stringify(vals)) + "; max-age=315360000; path=/; SameSite=Lax";
+    } catch {}
+  };
+  const saved = readCookie();
+  ids.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = String(saved[i] ?? "");
+    el.addEventListener("input", writeCookie);
+    el.addEventListener("change", writeCookie);
+  });
+  // 프리셋0/상단 투자금 칸은 프리셋 클릭으로 정해진 투자금(override)을 해제하고 상단 칸 값을 씁니다.
+  const clearOverride = () => { window.CB3_INVEST_OVERRIDE = ""; };
+  const gen = document.getElementById("btnGenerate");
+  if (gen) gen.addEventListener("click", clearOverride);
+  const top = document.getElementById("inpInvest");
+  if (top) top.addEventListener("input", clearOverride);
+})();
+    </script>
+    <script src="../app.js?v=2026년 10월 22일 - 7"></script>
     <script>
 /* ===== Maker2 전용: 고정값/입력 제한/투자금 ===== */
 (() => {
