@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 10월 22일 - 10";
+  const BUILD_VERSION = "2026년 10월 22일 - 11";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -1693,7 +1693,53 @@
     }
   }
 
+  // window.CB3_LOCAL_INPUTS_COOKIE(쿠키 이름)를 지정한 페이지(maker)는 수치(수익률/수익금/롱숏/진입가)를
+  // Supabase가 아니라 이 컴퓨터의 쿠키에 저장하고, 이 페이지에서는 Supabase에 아무것도 쓰지 않습니다.
+  function localInputsCookieName() {
+    const n = window.CB3_LOCAL_INPUTS_COOKIE;
+    return typeof n === "string" && n ? n : "";
+  }
+
+  function saveLocalInputs() {
+    const name = localInputsCookieName();
+    if (!name) return;
+    try {
+      const v = (el) => (el ? String(el.value ?? "") : "");
+      const data = {
+        percentMin: v(els.percentMin),
+        percentMax: v(els.percentMax),
+        profitMin: v(els.profitMin),
+        profitMax: v(els.profitMax),
+        side: v(els.side),
+        entry: v(els.entry),
+      };
+      document.cookie = `${name}=${encodeURIComponent(JSON.stringify(data))}; max-age=315360000; path=/; SameSite=Lax`;
+    } catch {}
+  }
+
+  function loadLocalInputs() {
+    const name = localInputsCookieName();
+    if (!name) return;
+    try {
+      const m = document.cookie.split("; ").find((c) => c.startsWith(`${name}=`));
+      if (!m) return;
+      const s = JSON.parse(decodeURIComponent(m.slice(name.length + 1)));
+      if (!s || typeof s !== "object") return;
+      const setVal = (el, val) => {
+        if (el && typeof val === "string" && val !== "") el.value = val;
+      };
+      setVal(els.percentMin, s.percentMin);
+      setVal(els.percentMax, s.percentMax);
+      setVal(els.profitMin, s.profitMin);
+      setVal(els.profitMax, s.profitMax);
+      setVal(els.entry, s.entry);
+      if (s.side) setSide(String(s.side).toUpperCase(), { shouldSave: false });
+      try { window.dispatchEvent(new Event("cb3-state-applied")); } catch {}
+    } catch {}
+  }
+
   async function cloudSaveNow({ silent = false, keepalive = false } = {}) {
+    if (localInputsCookieName()) return;
     if (!cloudConfigured()) return;
     try {
       const rowId = getSupabaseRowId();
@@ -1717,6 +1763,10 @@
   }
 
   function scheduleCloudSave() {
+    if (cloudReady && localInputsCookieName()) {
+      saveLocalInputs();
+      return;
+    }
     if (!cloudReady || !cloudConfigured()) return;
     clearTimeout(cloudSaveTimer);
     cloudSavePending = true;
@@ -3636,6 +3686,7 @@
     bindOverlayControls();
     cloudReady = false;
     if (cloudConfigured()) await cloudLoad();
+    loadLocalInputs();
     cloudReady = true;
     markSharedLayoutSnapshotFromLocal();
     startSharedLayoutPolling();
