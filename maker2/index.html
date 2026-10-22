@@ -622,13 +622,13 @@ button.secondary{ background:#0c1220; }
 }
 
 
-#maker2Presets .preset-btn.pressed{ border-color:#7dd3fc; box-shadow:0 0 0 1px #7dd3fc, 0 0 10px rgba(125,211,252,.75); color:#e7f6ff; }
+#maker2Presets .preset-btn.pressed{ border-color:#ffffff; box-shadow:0 0 0 1px #ffffff, 0 0 12px rgba(255,255,255,.8); color:#ffffff; }
 </style>
   </head>
   <body>
     <div class="topbar">
       <div class="topbar-left">Coin Maker2</div>
-            <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 22일 - 14</span></div>
+            <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 22일 - 15</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1113,8 +1113,7 @@ window.CB3_PRESET_INVEST_PREFIX = "inpMaker2Invest";
   // 눌러본 프리셋은 테두리가 발광하고, 우측 버튼으로 모두 초기화합니다.
   const presetBtns = document.querySelectorAll('#maker2Presets .preset-btn[data-preset]');
   presetBtns.forEach((btn) => btn.addEventListener('click', () => {
-    const inv = document.getElementById('inpMaker2Invest' + btn.getAttribute('data-preset'));
-    if (Number(String(inv && inv.value).replace(/,/g, '')) > 0) btn.classList.add('pressed');
+    btn.classList.add('pressed');
   }));
   const resetGlow = document.getElementById('btnMaker2ResetGlow');
   if (resetGlow) resetGlow.addEventListener('click', () => presetBtns.forEach((b) => b.classList.remove('pressed')));
@@ -1126,7 +1125,7 @@ window.CB3_PRESET_INVEST_PREFIX = "inpMaker2Invest";
   if (top) top.addEventListener("input", clearOverride);
 })();
     </script>
-    <script src="../app.js?v=2026년 10월 22일 - 14"></script>
+    <script src="../app.js?v=2026년 10월 22일 - 15"></script>
     <script>
 /* ===== Maker2 전용: 고정값/입력 제한/투자금 ===== */
 (() => {
