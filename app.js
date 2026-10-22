@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 10월 19일 - 3";
+  const BUILD_VERSION = "2026년 10월 22일 - 2";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -13,8 +13,8 @@
   // 하나에 추가하기만 하면 됩니다(같은 프로젝트/테이블, row id만 폴더 이름으로 분리).
   // - MAKER_LIKE_PAGES: 원래 maker처럼 "프리셋0"이 랜덤 크롭 후 클립보드 복사
   // - SUPPLY_LIKE_PAGES: supply처럼 "프리셋0"이 크롭/복사 없이 카드 전체를 바로 표시
-  const MAKER_LIKE_PAGES = ["maker"];
-  const SUPPLY_LIKE_PAGES = ["supply", "gein", "stockmaker3"];
+  const MAKER_LIKE_PAGES = [];
+  const SUPPLY_LIKE_PAGES = ["maker", "supply", "gein", "stockmaker3"];
   const INDEPENDENT_PROFILE_PAGES = [...MAKER_LIKE_PAGES, ...SUPPLY_LIKE_PAGES];
 
   function getSupabaseRowId() {
@@ -775,6 +775,7 @@
   }
 
   function getEffectiveProfitScalePctForPercent(percentValue) {
+    if (isMakerPage()) return 100;
     const p = Math.abs(Number(percentValue) || 0);
     if (presetProfitAutoScale?.enabled) {
       const rules = Array.isArray(presetProfitAutoScale.rules) ? presetProfitAutoScale.rules : [];
@@ -1614,6 +1615,8 @@
     sampleProfit = null;
     sampleEntry = null;
     renderAll();
+    // 페이지별 보정(예: maker의 고정값/수익금 칸 동기화)을 위한 알림. 다른 페이지엔 영향 없음.
+    try { window.dispatchEvent(new Event("cb3-state-applied")); } catch {}
   }
 
   // 구분선(#profitDivider)/롱숏 박스(#txtSideBox)는 항목이 비어 있거나 color가 빠지면

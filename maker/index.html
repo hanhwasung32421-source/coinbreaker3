@@ -627,7 +627,7 @@ button.secondary{ background:#0c1220; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Coin Maker</div>
-            <div class="topbar-right">버전 <span id="buildVersion">2026년 9월 22일 - 9</span></div>
+            <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 22일 - 2</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -685,10 +685,7 @@ button.secondary{ background:#0c1220; }
               </div>
             </div>
           </div>
-          <div class="masked-preview-stage" data-html2canvas-ignore="true">
-            <div id="maskedPreviewEmpty" class="masked-preview-empty">프리셋0을 누르면 여기에 크롭 미리보기가 표시됩니다.</div>
-            <img id="croppedPreviewImg" class="masked-preview-img" alt="cropped preview" />
-          </div>
+
         </div>
         <div class="hint">C는 DOM 기반 렌더링 후 캡처하는 방식입니다. A/B는 그대로 유지됩니다.</div>
         <div class="hint">복사가 안 되면 브라우저 보안 정책 때문일 수 있어요. 권장: 로컬 서버로 열기(예: <code>python -m http.server 8000 --directory c:\trae</code>)</div>
@@ -697,7 +694,7 @@ button.secondary{ background:#0c1220; }
           <div id="warningNotice" class="warning-notice">
             <span class="warn-long">LONG</span> / <span class="warn-short">SHORT</span> <span class="warn-text">확인요망</span>
           </div>
-          <div class="generate-hint">프리셋0 버튼을 누르면 검은 박스 위에 크롭 미리보기가 뜨고 복사됩니다.</div>
+          <div class="generate-hint">프리셋0 버튼을 누르면 새 값으로 카드 전체가 바로 표시됩니다. (크롭/클립보드 복사 없음)</div>
         </div>
       </div>
 
@@ -1015,9 +1012,12 @@ button.secondary{ background:#0c1220; }
         <div class="grid">
           <label>수익률 최소<input id="inpPercentMin" type="text" value="16" /></label>
           <label>수익률 최대<input id="inpPercentMax" type="text" value="21" /></label>
-          <label>최소 수익금 (만원)<input id="inpProfitMin" type="text" value="300" /></label>
-          <label>최대 수익금 (만원)<input id="inpProfitMax" type="text" value="400" /></label>
-          <label>코인 텍스트<input id="inpSymbol" type="text" value="SAMSUNGUSDT" /></label>
+          <label class="span-2">수익금 (만원) - 입력한 금액의 ±5% 안쪽으로 나옵니다<input id="inpProfitTarget" type="text" inputmode="decimal" value="350" /></label>
+          <div style="display:none;">
+            <input id="inpProfitMin" type="text" value="332.5" />
+            <input id="inpProfitMax" type="text" value="367.5" />
+          </div>
+          <label>코인 텍스트 (고정)<input id="inpSymbol" type="text" value="SAMSUNGUSDT" readonly /></label>
           <label>
             포지션(LONG/SHORT)
             <div class="side-toggle" role="group" aria-label="포지션 선택">
@@ -1028,7 +1028,7 @@ button.secondary{ background:#0c1220; }
           </label>
           <label>진입가격 / 실제진입가(자동)
             <div class="dual-input">
-              <input id="inpEntry" type="text" value="185.65" />
+              <input id="inpEntry" type="text" value="185.65" inputmode="decimal" maxlength="6" placeholder="000.00" />
               <input id="inpEntryReal" type="text" value="185.65" disabled />
             </div>
           </label>
@@ -1055,7 +1055,7 @@ button.secondary{ background:#0c1220; }
             </div>
           </details>
           <label>종료가격(자동)<input id="inpExit" type="text" value="0.00000" disabled /></label>
-          <label>레버리지<input id="inpLeverage" type="text" value="100x" /></label>
+          <label>레버리지 (고정)<input id="inpLeverage" type="text" value="100x" readonly /></label>
         </div>
       </div>
 
@@ -1067,6 +1067,77 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 9월 22일 - 9"></script>
+    <script src="../app.js?v=2026년 10월 22일 - 2"></script>
+    <script>
+/* ===== Maker 전용: 고정값/입력 제한/수익금 ±5% ===== */
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const target = $("inpProfitTarget"), pMin = $("inpProfitMin"), pMax = $("inpProfitMax");
+  const symbol = $("inpSymbol"), leverage = $("inpLeverage"), entry = $("inpEntry");
+  const FIXED_SYMBOL = "SAMSUNGUSDT", FIXED_LEVERAGE = "100x", DEFAULT_ENTRY = "185.65";
+  const ENTRY_RE = /^\d{3}\.\d{2}$/;
+  const r2 = (n) => Math.round(n * 100) / 100;
+  const num = (v) => { const n = Number(String(v == null ? "" : v).replace(/,/g, "").trim()); return Number.isFinite(n) ? n : NaN; };
+  const fire = (el) => el.dispatchEvent(new Event("input", { bubbles: true }));
+
+  // 수익금(만원) 칸 -> 숨겨진 최소/최대(±5%)
+  function applyTarget() {
+    const v = num(target.value);
+    if (!(v > 0)) return;
+    const mn = String(r2(v * 0.95)), mx = String(r2(v * 1.05));
+    if (pMin.value !== mn) { pMin.value = mn; fire(pMin); }
+    if (pMax.value !== mx) { pMax.value = mx; fire(pMax); }
+  }
+  // 저장/불러온 최소·최대 -> 수익금 칸(두 값의 중앙)
+  function syncTargetFromRange() {
+    const a = num(pMin.value), b = num(pMax.value);
+    if (!(a > 0) || !(b > 0)) return;
+    const c = r2((a + b) / 2);
+    target.value = String(c);
+    applyTarget();
+  }
+
+  // 진입가격: 숫자 5자리만, 항상 nnn.nn
+  let lastValidEntry = ENTRY_RE.test(entry.value) ? entry.value : DEFAULT_ENTRY;
+  function formatEntry(raw) {
+    const d = String(raw).replace(/\D/g, "").slice(0, 5);
+    return d.length > 3 ? d.slice(0, 3) + "." + d.slice(3) : d;
+  }
+  function maskEntry() {
+    const out = formatEntry(entry.value);
+    if (entry.value !== out) entry.value = out;
+    if (ENTRY_RE.test(out)) lastValidEntry = out;
+  }
+  function completeEntry() {
+    const d = String(entry.value).replace(/\D/g, "");
+    let out = lastValidEntry;
+    if (ENTRY_RE.test(entry.value)) out = entry.value;
+    else if (d.length >= 3) out = formatEntry(d.padEnd(5, "0"));
+    if (entry.value !== out) { entry.value = out; fire(entry); }
+    lastValidEntry = out;
+  }
+  entry.addEventListener("beforeinput", (e) => {
+    if (e.inputType && e.inputType.startsWith("insert") && e.data != null && /[^0-9.]/.test(e.data)) e.preventDefault();
+  });
+  entry.addEventListener("input", maskEntry, true);
+  entry.addEventListener("blur", completeEntry);
+  entry.addEventListener("change", completeEntry);
+
+  function enforceFixed() {
+    if (symbol.value !== FIXED_SYMBOL) { symbol.value = FIXED_SYMBOL; fire(symbol); }
+    if (leverage.value !== FIXED_LEVERAGE) { leverage.value = FIXED_LEVERAGE; fire(leverage); }
+    if (!ENTRY_RE.test(entry.value)) { completeEntry(); }
+  }
+
+  target.addEventListener("input", applyTarget);
+  target.addEventListener("change", applyTarget);
+  window.addEventListener("cb3-state-applied", () => { enforceFixed(); syncTargetFromRange(); });
+  const reset = $("btnReset");
+  if (reset) reset.addEventListener("click", () => setTimeout(() => { enforceFixed(); syncTargetFromRange(); }, 0));
+
+  enforceFixed();
+  syncTargetFromRange();
+})();
+    </script>
   </body>
 </html>
