@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 10월 22일 - 5";
+  const BUILD_VERSION = "2026년 10월 22일 - 6";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -2815,13 +2815,27 @@
         const presetId = btn.getAttribute("data-preset");
         const pmin = btn.getAttribute("data-pmin");
         const pmax = btn.getAttribute("data-pmax");
-        if (els.profitMin && pmin != null) els.profitMin.value = String(pmin);
-        if (els.profitMax && pmax != null) els.profitMax.value = String(pmax);
+        // 투자금 입력칸을 지정한 페이지(maker2): 프리셋의 투자금을 그 칸에 넣어 투자금×수익률로 생성합니다.
+        const pageInvestId = typeof window.CB3_INVEST_INPUT_ID === "string" ? window.CB3_INVEST_INPUT_ID : "";
+        if (pageInvestId) {
+          const presetInvestVal = String(document.getElementById(`inpPresetProfitInvest${presetId}`)?.value ?? "").trim();
+          const topInvest = document.getElementById(pageInvestId);
+          if (!(parseManWon(presetInvestVal, 0) > 0)) {
+            showToastFor(`프리셋${presetId}의 투자금을 먼저 입력하세요`, 2000);
+            return;
+          }
+          if (topInvest) {
+            topInvest.value = presetInvestVal;
+            topInvest.dispatchEvent(new Event("input", { bubbles: true }));
+          }
+        }
+        if (!pageInvestId && els.profitMin && pmin != null) els.profitMin.value = String(pmin);
+        if (!pageInvestId && els.profitMax && pmax != null) els.profitMax.value = String(pmax);
 
         // 프리셋별 수익금(만원) 범위 설정을 우선 적용
         // (배율은 생성 단계에서 percent에 따라 자동/수동으로 적용합니다)
         const pc = presetId != null ? presetProfitCfg?.[String(presetId)] : null;
-        if (els.profitMin && els.profitMax && pc && pc.min != null && pc.max != null) {
+        if (!pageInvestId && els.profitMin && els.profitMax && pc && pc.min != null && pc.max != null) {
           const mn = String(pc.min).trim();
           const mx = String(pc.max).trim();
           if (mn !== "" && mx !== "") {
