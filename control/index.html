@@ -8,6 +8,7 @@
       try {
         if (localStorage.getItem("cb3_adjust_collapsed") === "1") document.documentElement.classList.add("adjust-collapsed");
         if (localStorage.getItem("cb3_bgcard_collapsed") === "1") document.documentElement.classList.add("bgcard-collapsed");
+        if (localStorage.getItem("cb3_crop_collapsed") === "1") document.documentElement.classList.add("crop-collapsed");
       } catch (e) {}
     </script>
     <title>Coin Breaker</title>
@@ -146,7 +147,10 @@ html.adjust-collapsed .adjust-toggle .arrow{ transform:rotate(-90deg); }
 html.adjust-collapsed #adjustGrid{ display:none; }
 html.bgcard-collapsed #bgCardToggle .arrow{ transform:rotate(-90deg); }
 html.bgcard-collapsed #bgCardGrid{ display:none; }
-.controls .grid + h1.adjust-toggle{ margin-top:18px; }
+.controls .grid + h1.adjust-toggle, .controls #cropGrid + h1.adjust-toggle, .controls .preset-wrap + h1.adjust-toggle{ margin-top:18px; }
+html.crop-collapsed #cropToggle .arrow{ transform:rotate(-90deg); }
+html.crop-collapsed #cropGrid{ display:none; }
+#cropGrid{ margin-bottom:2px; }
 
 .grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
 label{ display:grid; gap:6px; font-size:12px; color:var(--muted); }
@@ -683,7 +687,7 @@ button.secondary{ background:#0c1220; }
           >저장</button
         >
       </div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 23일 - 7</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 23일 - 8</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -840,8 +844,11 @@ button.secondary{ background:#0c1220; }
             </div>
           </details>
 
-          <details class="phrase-settings" style="margin-top:8px;" open>
-            <summary>크롭 설정(쉽게)</summary>
+        </div>
+
+        <h1 id="cropToggle" class="adjust-toggle" role="button" tabindex="0" aria-expanded="true">크롭 설정 (가이드·고급 포함) <span class="arrow">▾</span></h1>
+
+        <div class="phrase-settings" id="cropGrid">
             <div class="phrase-help">
               여기서 말하는 <b>가로</b>는 <b>좌우(너비)</b>, <b>세로</b>는 <b>위아래(높이)</b>입니다.<br />
               가로 비율은 “<b>카드 전체 대비 남는 너비</b>”이며, <b>오른쪽이 잘리는</b> 방식입니다.
@@ -898,8 +905,7 @@ button.secondary{ background:#0c1220; }
                 </div>
               </details>
             </div>
-          </details>
-        </div>
+                  </div>
 
         <h1 id="bgCardToggle" class="adjust-toggle" role="button" tabindex="0" aria-expanded="true">카드 배경·모양 <span class="arrow">▾</span></h1>
 
@@ -1147,12 +1153,13 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 10월 23일 - 7"></script>
+    <script src="../app.js?v=2026년 10월 23일 - 8"></script>
     <script>
       (function () {
         var root = document.documentElement;
         [
           ["adjustToggle", "adjust-collapsed", "cb3_adjust_collapsed"],
+          ["cropToggle", "crop-collapsed", "cb3_crop_collapsed"],
           ["bgCardToggle", "bgcard-collapsed", "cb3_bgcard_collapsed"],
         ].forEach(function (cfg) {
           var head = document.getElementById(cfg[0]);
