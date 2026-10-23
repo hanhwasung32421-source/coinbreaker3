@@ -3739,6 +3739,14 @@
     applyOverlayToDom();
   }
 
+  // 일부 페이지는 첫 렌더 전까지 #cardRoot를 CSS로 숨겨 둡니다(옛 기본 카드가 번쩍 보이는 것 방지).
+  // 저장된 설정으로 첫 렌더가 끝나면 보이게 합니다. (숨김 규칙이 없는 페이지에서는 아무 영향 없음)
+  function revealCardRoot() {
+    if (!els.cardRoot) return;
+    els.cardRoot.style.visibility = "visible";
+    els.cardRoot.style.animation = "none";
+  }
+
   async function init() {
     initMaskedPreview();
     bindPhraseUi();
@@ -3767,6 +3775,7 @@
 
     rerollIfNeeded(true);
     renderAll();
+    revealCardRoot();
     triggerWarningFlash();
 
     // 빌드 버전(커밋마다 갱신되는 version.json)

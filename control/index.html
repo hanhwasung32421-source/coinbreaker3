@@ -636,6 +636,12 @@ button.secondary{ background:#0c1220; }
 }
 
 
+
+/* 첫 화면에서 HTML에 들어있는 옛 기본 카드(DOGE/USDT, 노란 박스 등)가 잠깐 보이지 않도록,
+   app.js가 저장된 설정으로 첫 렌더를 끝낼 때까지 카드를 숨깁니다.
+   (JS가 실패해도 4초 뒤 자동으로 보이게 하는 안전장치 포함) */
+#cardRoot{ visibility:hidden; animation:cb3CardReveal 0s linear 4s forwards; }
+@keyframes cb3CardReveal{ to{ visibility:visible; } }
 </style>
   </head>
   <body>
@@ -663,7 +669,7 @@ button.secondary{ background:#0c1220; }
           >저장</button
         >
       </div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 23일 - 4</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 23일 - 5</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1122,6 +1128,6 @@ button.secondary{ background:#0c1220; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="../app.js?v=2026년 10월 23일 - 4"></script>
+    <script src="../app.js?v=2026년 10월 23일 - 5"></script>
   </body>
 </html>
