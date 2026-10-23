@@ -646,10 +646,21 @@
     return { W, H, x, y, minW, maxW, h: sampleH };
   }
 
+  // 크롭 가이드(파란 점선) 표시 여부: 보는 사람 화면 설정이라 이 브라우저에만 기억합니다.
+  const LS_CROP_GUIDE_VISIBLE = "cb3_crop_guide_visible";
+  function isCropGuideVisible() {
+    try {
+      return localStorage.getItem(LS_CROP_GUIDE_VISIBLE) !== "0";
+    } catch {
+      return true;
+    }
+  }
+
   function updateCropGuideUi() {
     const guide = ensureCropGuideEl();
     const bounds = computeCropBoundsForUi();
     if (!guide || !bounds) return;
+    guide.style.display = isCropGuideVisible() ? "" : "none";
     guide.style.left = `${bounds.x}px`;
     guide.style.top = `${bounds.y}px`;
     guide.style.width = `${Math.max(1, bounds.minW)}px`;
@@ -2715,6 +2726,19 @@
       el.addEventListener("input", onEdit);
       el.addEventListener("change", onEdit);
     });
+
+    const chkGuide = document.getElementById("chkCropGuideVisible");
+    if (chkGuide) {
+      chkGuide.checked = isCropGuideVisible();
+      chkGuide.addEventListener("change", () => {
+        try {
+          localStorage.setItem(LS_CROP_GUIDE_VISIBLE, chkGuide.checked ? "1" : "0");
+        } catch {
+          // 저장 실패해도 이번 화면에서는 바로 반영됩니다.
+        }
+        updateCropGuideUi();
+      });
+    }
 
     // 초기 가이드 표시
     updateCropGuideUi();
