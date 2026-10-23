@@ -81,6 +81,7 @@
     bgShiftX: document.getElementById("inpBgShiftX"),
     bgShiftY: document.getElementById("inpBgShiftY"),
     cardRadius: document.getElementById("inpCardRadius"),
+    cardDim: document.getElementById("inpCardDim"),
     count: document.getElementById("inpCount"),
     prefix: document.getElementById("inpPrefix"),
 
@@ -353,6 +354,8 @@
   let bgShiftX = 0;
   let bgShiftY = 0;
   let cardRadiusPx = 0;
+  // 카드 배경 위 검은 반투명 층(.dg-body::before)의 불투명도(%). null이면 각 페이지 CSS 기본값 사용.
+  let cardDimPct = null;
   let overlayState = {
     src: "",
     opacity: 0.5,
@@ -1496,7 +1499,7 @@
         prefix: toVal(els.prefix),
         sm3StockName: toVal(document.getElementById("inpSm3StockName")),
       },
-      bg: { shiftX: bgShiftX, shiftY: bgShiftY, radius: cardRadiusPx },
+      bg: { shiftX: bgShiftX, shiftY: bgShiftY, radius: cardRadiusPx, dim: cardDimPct },
       overlay: {
         src: String(overlayState?.src || ""),
         opacity: clamp(overlayState?.opacity ?? 0.5, 0, 1),
@@ -1555,6 +1558,9 @@
       cardRadiusPx = typeof state.bg.radius === "number" && Number.isFinite(state.bg.radius)
         ? clamp(state.bg.radius, 0, 60)
         : 0;
+      cardDimPct = typeof state.bg.dim === "number" && Number.isFinite(state.bg.dim)
+        ? clamp(state.bg.dim, 0, 100)
+        : null;
     }
     if (state.overlay && typeof state.overlay === "object") {
       overlayState = {
@@ -1625,6 +1631,7 @@
     fillPresetProfitUiFromCfg();
     syncBgShiftInputs();
     syncCardRadiusInput();
+    syncCardDimInput();
     syncOverlayUi();
     applyOverlayToDom();
 
@@ -1802,7 +1809,7 @@
   }
 
   function markSharedLayoutSnapshotFromLocal() {
-    lastSharedLayoutSnapshot = snapshotSharedLayout(cardCustomStyles, { shiftX: bgShiftX, shiftY: bgShiftY, radius: cardRadiusPx }, cropCfg);
+    lastSharedLayoutSnapshot = snapshotSharedLayout(cardCustomStyles, { shiftX: bgShiftX, shiftY: bgShiftY, radius: cardRadiusPx, dim: cardDimPct }, cropCfg);
   }
 
   async function pollSharedLayoutFromCloud() {
@@ -1828,9 +1835,11 @@
         if (typeof shared.bg.shiftX === "number") bgShiftX = shared.bg.shiftX;
         if (typeof shared.bg.shiftY === "number") bgShiftY = shared.bg.shiftY;
         if (typeof shared.bg.radius === "number") cardRadiusPx = clamp(shared.bg.radius, 0, 60);
+        cardDimPct = typeof shared.bg.dim === "number" && Number.isFinite(shared.bg.dim) ? clamp(shared.bg.dim, 0, 100) : null;
       }
       syncBgShiftInputs();
       syncCardRadiusInput();
+      syncCardDimInput();
       const selTarget = document.getElementById("selNavTarget");
       if (selTarget) updateNavControlsForTarget(selTarget.value);
       renderAll();
@@ -1931,6 +1940,29 @@
     if (els.cardRadius) els.cardRadius.value = String(Math.round(cardRadiusPx));
   }
 
+  function syncCardDimInput() {
+    if (els.cardDim) els.cardDim.value = String(cardDimPct == null ? 90 : Math.round(cardDimPct));
+  }
+
+  // 컨트롤에서 값을 정했을 때만, 가상요소(::before) 색을 CSS 변수로 덮어씁니다.
+  // (값이 없으면 아무것도 건드리지 않아 각 페이지의 기존 CSS 그대로 유지)
+  function applyCardDim() {
+    if (!els.cardRoot) return;
+    let styleEl = document.getElementById("cb3-dim-style");
+    if (cardDimPct == null) {
+      els.cardRoot.style.removeProperty("--cb3-dim");
+      if (styleEl) styleEl.remove();
+      return;
+    }
+    if (!styleEl) {
+      styleEl = document.createElement("style");
+      styleEl.id = "cb3-dim-style";
+      styleEl.textContent = ".dg-body::before{ background-color: rgba(3, 7, 18, var(--cb3-dim, 0.9)) !important; }";
+      document.head.appendChild(styleEl);
+    }
+    els.cardRoot.style.setProperty("--cb3-dim", String(clamp(cardDimPct, 0, 100) / 100));
+  }
+
   function applyOverlayToDom() {
     const imgOverlay = document.getElementById("imgOverlay");
     if (!imgOverlay) return;
@@ -1974,6 +2006,7 @@
     // 모서리를 라운드로 두면 캡처 시 둥근 모서리 바깥이 배경 없이(흰색으로) 보일 수 있어
     // 기본값은 0(직각)이며, 사용자가 원하면 컨트롤 화면에서 조절할 수 있습니다.
     els.cardRoot.style.borderRadius = `${Math.max(0, Math.round(cardRadiusPx))}px`;
+    applyCardDim();
   }
 
   function setSide(value, { shouldSave = true } = {}) {
@@ -2819,6 +2852,7 @@
         bgShiftX = 0;
         bgShiftY = 0;
         cardRadiusPx = 0;
+        cardDimPct = null;
         setSide(DEFAULTS.side, { shouldSave: false });
         generatedItems = [];
         previewIndex = -1;
@@ -2828,6 +2862,7 @@
         lastEntryBase = null;
         syncBgShiftInputs();
         syncCardRadiusInput();
+        syncCardDimInput();
         renderAll();
         scheduleCloudSave();
       });
@@ -2879,6 +2914,14 @@
     if (els.cardRadius) {
       els.cardRadius.addEventListener("input", () => {
         cardRadiusPx = clamp(Number(els.cardRadius.value) || 0, 0, 60);
+        renderAll();
+        scheduleCloudSave();
+      });
+    }
+    if (els.cardDim) {
+      els.cardDim.addEventListener("input", () => {
+        const raw = String(els.cardDim.value).trim();
+        cardDimPct = raw === "" ? null : clamp(Number(raw) || 0, 0, 100);
         renderAll();
         scheduleCloudSave();
       });
@@ -3706,6 +3749,7 @@
     bindSideUi();
     syncBgShiftInputs();
     syncCardRadiusInput();
+    syncCardDimInput();
     bindClickToNavTargets();
     bindOverlayControls();
     cloudReady = false;
