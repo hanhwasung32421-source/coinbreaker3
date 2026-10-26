@@ -2,7 +2,7 @@
 
 /* ===== 양식 11~50: Tailwind 유틸리티(접두사 tw:) — 이 카드 안에서만 쓰는 최소 프리플라이트 ===== */
 .sm3-tw,.sm3-tw *,.sm3-tw ::before,.sm3-tw ::after{box-sizing:border-box;margin:0;padding:0;border:0 solid}
-.sm3-tw{line-height:1.5;-webkit-text-size-adjust:100%}
+.sm3-tw{line-height:1.5;-webkit-text-size-adjust:100%;color:#000}
 .sm3-tw h1,.sm3-tw h2,.sm3-tw h3,.sm3-tw h4,.sm3-tw h5,.sm3-tw h6{font-size:inherit;font-weight:inherit}
 .sm3-tw ol,.sm3-tw ul{list-style:none}
 .sm3-tw img,.sm3-tw svg,.sm3-tw video{display:block;vertical-align:middle}
@@ -569,12 +569,10 @@
     border-color: var(--tw-color-black);
   }
   .tw\:border-black\/5 {
-    border-color: var(--tw-color-black);
-    
+    border-color: rgba(0,0,0,0.05);
   }
   .tw\:border-black\/10 {
-    border-color: var(--tw-color-black);
-    
+    border-color: rgba(0,0,0,0.1);
   }
   .tw\:border-gray-50 {
     border-color: var(--tw-color-gray-50);
@@ -589,8 +587,7 @@
     border-color: var(--tw-color-gray-300);
   }
   .tw\:border-gray-700\/50 {
-    border-color: var(--tw-color-gray-700);
-    
+    border-color: rgba(54,65,83,0.5);
   }
   .tw\:border-gray-800 {
     border-color: var(--tw-color-gray-800);
@@ -599,8 +596,7 @@
     border-color: var(--tw-color-gray-900);
   }
   .tw\:border-indigo-500\/30 {
-    border-color: var(--tw-color-indigo-500);
-    
+    border-color: rgba(97,95,255,0.3);
   }
   .tw\:border-red-500 {
     border-color: var(--tw-color-red-500);
@@ -612,24 +608,19 @@
     border-color: var(--tw-color-white);
   }
   .tw\:border-white\/5 {
-    border-color: var(--tw-color-white);
-    
+    border-color: rgba(255,255,255,0.05);
   }
   .tw\:border-white\/10 {
-    border-color: var(--tw-color-white);
-    
+    border-color: rgba(255,255,255,0.1);
   }
   .tw\:border-white\/20 {
-    border-color: var(--tw-color-white);
-    
+    border-color: rgba(255,255,255,0.2);
   }
   .tw\:border-white\/50 {
-    border-color: var(--tw-color-white);
-    
+    border-color: rgba(255,255,255,0.5);
   }
   .tw\:border-white\/\[0\.05\] {
-    border-color: var(--tw-color-white);
-    
+    border-color: rgba(255,255,255,0.05);
   }
   .tw\:bg-\[\#0a3560\] {
     background-color: #0a3560;
@@ -767,8 +758,7 @@
     background-color: var(--tw-color-black);
   }
   .tw\:bg-black\/10 {
-    background-color: var(--tw-color-black);
-    
+    background-color: rgba(0,0,0,0.1);
   }
   .tw\:bg-blue-50 {
     background-color: var(--tw-color-blue-50);
@@ -786,8 +776,7 @@
     background-color: var(--tw-color-gray-50);
   }
   .tw\:bg-gray-50\/50 {
-    background-color: var(--tw-color-gray-50);
-    
+    background-color: rgba(249,250,251,0.5);
   }
   .tw\:bg-gray-100 {
     background-color: var(--tw-color-gray-100);
@@ -802,8 +791,7 @@
     background-color: var(--tw-color-gray-900);
   }
   .tw\:bg-indigo-500\/20 {
-    background-color: var(--tw-color-indigo-500);
-    
+    background-color: rgba(97,95,255,0.2);
   }
   .tw\:bg-orange-600 {
     background-color: var(--tw-color-orange-600);
@@ -815,8 +803,7 @@
     background-color: var(--tw-color-red-500);
   }
   .tw\:bg-red-500\/20 {
-    background-color: var(--tw-color-red-500);
-    
+    background-color: rgba(251,44,54,0.2);
   }
   .tw\:bg-red-600 {
     background-color: var(--tw-color-red-600);
@@ -834,24 +821,19 @@
     background-color: var(--tw-color-white);
   }
   .tw\:bg-white\/5 {
-    background-color: var(--tw-color-white);
-    
+    background-color: rgba(255,255,255,0.05);
   }
   .tw\:bg-white\/10 {
-    background-color: var(--tw-color-white);
-    
+    background-color: rgba(255,255,255,0.1);
   }
   .tw\:bg-white\/40 {
-    background-color: var(--tw-color-white);
-    
+    background-color: rgba(255,255,255,0.4);
   }
   .tw\:bg-white\/50 {
-    background-color: var(--tw-color-white);
-    
+    background-color: rgba(255,255,255,0.5);
   }
   .tw\:bg-white\/\[0\.02\] {
-    background-color: var(--tw-color-white);
-    
+    background-color: rgba(255,255,255,0.02);
   }
   .tw\:bg-gradient-to-l {
     --tw-gradient-position: to left;
@@ -1200,12 +1182,10 @@
     color: var(--tw-color-black);
   }
   .tw\:text-black\/30 {
-    color: var(--tw-color-black);
-    
+    color: rgba(0,0,0,0.3);
   }
   .tw\:text-black\/40 {
-    color: var(--tw-color-black);
-    
+    color: rgba(0,0,0,0.4);
   }
   .tw\:text-blue-600 {
     color: var(--tw-color-blue-600);
@@ -1265,32 +1245,25 @@
     color: var(--tw-color-white);
   }
   .tw\:text-white\/10 {
-    color: var(--tw-color-white);
-    
+    color: rgba(255,255,255,0.1);
   }
   .tw\:text-white\/20 {
-    color: var(--tw-color-white);
-    
+    color: rgba(255,255,255,0.2);
   }
   .tw\:text-white\/30 {
-    color: var(--tw-color-white);
-    
+    color: rgba(255,255,255,0.3);
   }
   .tw\:text-white\/40 {
-    color: var(--tw-color-white);
-    
+    color: rgba(255,255,255,0.4);
   }
   .tw\:text-white\/50 {
-    color: var(--tw-color-white);
-    
+    color: rgba(255,255,255,0.5);
   }
   .tw\:text-white\/60 {
-    color: var(--tw-color-white);
-    
+    color: rgba(255,255,255,0.6);
   }
   .tw\:text-white\/70 {
-    color: var(--tw-color-white);
-    
+    color: rgba(255,255,255,0.7);
   }
   .tw\:uppercase {
     text-transform: uppercase;
