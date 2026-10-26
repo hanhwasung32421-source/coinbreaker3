@@ -2,7 +2,7 @@
 (() => {
   // 빌드 버전(로컬에서 index.html을 바로 열어도 표시되도록 코드에 내장)
   // 수정할 때마다 값을 갱신합니다. 포맷: YYYYMMDD-HHMMSS
-  const BUILD_VERSION = "2026년 10월 22일 - 15";
+  const BUILD_VERSION = "2026년 10월 26일 - 2";
 
   const SUPABASE_URL = "https://onudikupmynqtirkmmlc.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -1476,6 +1476,7 @@
 
   // stockmaker3처럼 자체 프리셋 클릭 로직을 쓰는 페이지가 같은 문구 생성기를 재사용하도록 노출합니다.
   window.__cbPhraseApi = { makePresetPhrase, undoPendingBagDraws };
+  window.__cbScheduleSave = () => scheduleCloudSave();
 
   function collectState() {
     const toVal = (el) => (el ? String(el.value ?? "") : "");
@@ -1670,6 +1671,10 @@
   }
 
   async function cloudLoad() {
+    if (localStateCookieName()) {
+      loadLocalState();
+      return;
+    }
     if (!cloudConfigured()) {
       showToastFor("Supabase 설정값(SUPABASE_URL/ANON_KEY) 필요", 2000);
       return;
@@ -1756,8 +1761,92 @@
     } catch {}
   }
 
+  // window.CB3_LOCAL_STATE_COOKIE(쿠키 이름)를 지정한 페이지(stockmaker3)는 저장된 프리셋/문구/수익금 설정 등
+  // 이 페이지의 모든 설정을 Supabase가 아니라 이 컴퓨터의 쿠키(여러 조각)에 저장하고 불러옵니다.
+  // 쿠키는 이 페이지 경로(예: /stockmaker3/)에만 붙고, Supabase에는 읽기/쓰기 모두 하지 않습니다.
+  function localStateCookieName() {
+    const n = window.CB3_LOCAL_STATE_COOKIE;
+    return typeof n === "string" && n ? n : "";
+  }
+
+  const LOCAL_STATE_CHUNK = 3000;
+  let localStateTimer = null;
+
+  function lsCookiePath() {
+    return String(location.pathname || "/").replace(/[^/]*$/, "") || "/";
+  }
+
+  function lsReadRaw(n) {
+    const m = document.cookie.split("; ").find((c) => c.startsWith(`${n}=`));
+    return m ? m.slice(n.length + 1) : "";
+  }
+
+  function lsB64Encode(str) {
+    const bytes = new TextEncoder().encode(str);
+    let bin = "";
+    bytes.forEach((b) => { bin += String.fromCharCode(b); });
+    return btoa(bin);
+  }
+
+  function lsB64Decode(b64) {
+    const bin = atob(b64);
+    return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
+  }
+
+  function saveLocalState() {
+    const name = localStateCookieName();
+    if (!name) return;
+    try {
+      const st = collectState();
+      const keep = {
+        v: 3,
+        inputs: st.inputs,
+        phraseCfg: st.phraseCfg,
+        congratsCfg: st.congratsCfg,
+        presetProfitCfg: st.presetProfitCfg,
+        presetProfitScalePct: st.presetProfitScalePct,
+        presetProfitAutoScale: st.presetProfitAutoScale,
+      };
+      try {
+        if (typeof window.CB3_LOCAL_STATE_EXTRA === "function") keep.extra = window.CB3_LOCAL_STATE_EXTRA();
+      } catch {}
+      const b64 = lsB64Encode(JSON.stringify(keep));
+      const parts = [];
+      for (let i = 0; i < b64.length; i += LOCAL_STATE_CHUNK) parts.push(b64.slice(i, i + LOCAL_STATE_CHUNK));
+      const prevN = parseInt(lsReadRaw(`${name}_n`), 10) || 0;
+      const base = `; path=${lsCookiePath()}; SameSite=Lax`;
+      const live = `; max-age=34560000${base}`;
+      parts.forEach((p, i) => { document.cookie = `${name}_${i}=${p}${live}`; });
+      document.cookie = `${name}_n=${parts.length}${live}`;
+      for (let i = parts.length; i < prevN; i++) document.cookie = `${name}_${i}=; max-age=0${base}`;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function loadLocalState() {
+    const name = localStateCookieName();
+    if (!name) return;
+    try {
+      const cnt = parseInt(lsReadRaw(`${name}_n`), 10);
+      if (!(cnt > 0)) return;
+      let b64 = "";
+      for (let i = 0; i < cnt; i++) {
+        const p = lsReadRaw(`${name}_${i}`);
+        if (!p) return;
+        b64 += p;
+      }
+      const st = JSON.parse(lsB64Decode(b64));
+      if (!st || typeof st !== "object") return;
+      window.__cb3LocalExtra = st.extra || null;
+      applyState(st);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   async function cloudSaveNow({ silent = false, keepalive = false } = {}) {
-    if (localInputsCookieName()) return;
+    if (localInputsCookieName() || localStateCookieName()) return;
     if (!cloudConfigured()) return;
     try {
       const rowId = getSupabaseRowId();
@@ -1781,6 +1870,13 @@
   }
 
   function scheduleCloudSave() {
+    if (localStateCookieName()) {
+      if (cloudReady) {
+        clearTimeout(localStateTimer);
+        localStateTimer = setTimeout(saveLocalState, 250);
+      }
+      return;
+    }
     if (cloudReady && localInputsCookieName()) {
       saveLocalInputs();
       return;
@@ -1868,6 +1964,7 @@
   }
 
   function startSharedLayoutPolling() {
+    if (localStateCookieName()) return;
     if (sharedLayoutPollingEnabled || !cloudConfigured()) return;
     sharedLayoutPollingEnabled = true;
     document.addEventListener("visibilitychange", onSharedLayoutVisibilityChange);
@@ -1925,6 +2022,13 @@
   }
 
   function flushCloudSaveOnLeave() {
+    if (localStateCookieName()) {
+      if (cloudReady) {
+        clearTimeout(localStateTimer);
+        saveLocalState();
+      }
+      return;
+    }
     if (!cloudReady || !cloudConfigured() || !cloudSavePending) return;
     clearTimeout(cloudSaveTimer);
     cloudSaveTimer = null;
@@ -3761,7 +3865,8 @@
     bindClickToNavTargets();
     bindOverlayControls();
     cloudReady = false;
-    if (cloudConfigured()) await cloudLoad();
+    if (localStateCookieName()) loadLocalState();
+    else if (cloudConfigured()) await cloudLoad();
     loadLocalInputs();
     cloudReady = true;
     markSharedLayoutSnapshotFromLocal();

@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Nanum+Gothic:wght@400;700;800&display=swap" />
+    <link rel="stylesheet" href="forms.css" />
     <title>Stock Maker3</title>
     <style>
 :root{
@@ -644,6 +645,13 @@ html,body{ overflow:hidden; }
 /* 프리셋 열 폭을 breaker의 실제 계산값(1/64px 단위)과 똑같이 고정 */
 .preset-grid{ grid-template-columns:94.59375px 94.59375px 94.609375px 94.59375px 94.59375px; }
 /* 프리셋 문구 위 투명 복사 버튼 (문구가 생길 때 함께 생성됨) */
+/* 프리셋 양식(1~100) 선택 줄 */
+.sm3-tpl-row{ margin-top:-2px; }
+.sm3-tpl-title{ font-size:12px; color:var(--muted); margin-bottom:4px; }
+.sm3-tpl-grid{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px 10px; }
+.sm3-tpl-grid label{ display:flex; align-items:center; gap:4px; font-size:12px; color:rgba(231,238,252,.85); white-space:nowrap; }
+.sm3-tpl-grid input{ width:100%; min-width:0; padding:4px 6px; font-size:12px; }
+.sm3-card.sm3-form{ font-family:inherit; }
 /* 설정 패널 3개 버튼을 한 줄로 배치. 펼친 패널은 한 줄 전체 폭을 차지 */
 .sm3-details-row{ display:flex; flex-wrap:wrap; align-items:flex-start; gap:6px 14px; }
 .sm3-details-row > details{ flex:0 0 auto; }
@@ -802,7 +810,7 @@ html,body{ overflow:hidden; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 19일 - 3</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 26일 - 2</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1194,6 +1202,10 @@ html,body{ overflow:hidden; }
             </div>
           </details>
           </div>
+          <div class="sm3-tpl-row">
+            <div class="sm3-tpl-title">프리셋 양식 (프리셋n = 양식 1~100번)</div>
+            <div class="sm3-tpl-grid"><label>프리셋1<input id="inpSm3Tpl1" type="number" min="1" max="100" step="1" value="1" /></label><label>프리셋2<input id="inpSm3Tpl2" type="number" min="1" max="100" step="1" value="2" /></label><label>프리셋3<input id="inpSm3Tpl3" type="number" min="1" max="100" step="1" value="3" /></label><label>프리셋4<input id="inpSm3Tpl4" type="number" min="1" max="100" step="1" value="4" /></label><label>프리셋5<input id="inpSm3Tpl5" type="number" min="1" max="100" step="1" value="5" /></label><label>프리셋6<input id="inpSm3Tpl6" type="number" min="1" max="100" step="1" value="6" /></label><label>프리셋7<input id="inpSm3Tpl7" type="number" min="1" max="100" step="1" value="7" /></label><label>프리셋8<input id="inpSm3Tpl8" type="number" min="1" max="100" step="1" value="8" /></label><label>프리셋9<input id="inpSm3Tpl9" type="number" min="1" max="100" step="1" value="9" /></label><label>프리셋10<input id="inpSm3Tpl10" type="number" min="1" max="100" step="1" value="10" /></label></div>
+          </div>
         </div>
 
         <div class="grid">
@@ -1254,8 +1266,17 @@ html,body{ overflow:hidden; }
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script>window.CB3_CONGRATS_AUTOCOPY = true;</script>
-    <script src="../app.js?v=2026년 10월 19일 - 3"></script>
+    <script src="forms.js"></script>
+    <script>
+window.CB3_CONGRATS_AUTOCOPY = true;
+window.CB3_LOCAL_STATE_COOKIE = "cb3_stockmaker3";
+window.CB3_LOCAL_STATE_EXTRA = function () {
+  var t = [];
+  for (var i = 1; i <= 10; i++) { var el = document.getElementById("inpSm3Tpl" + i); t.push(el ? el.value : String(i)); }
+  return { tpl: t };
+};
+    </script>
+    <script src="../app.js?v=2026년 10월 26일 - 2"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1344,7 +1365,30 @@ html,body{ overflow:hidden; }
     return { name, amount, rate, principal, date };
   }
 
+  const clampTpl = (v, fallback) => {
+    const n = Math.round(Number(v));
+    return Number.isFinite(n) && n >= 1 && n <= 100 ? n : fallback;
+  };
+  function getTemplateId(presetId) {
+    const el = document.getElementById(`inpSm3Tpl${presetId}`);
+    return clampTpl(el ? el.value : presetId, Number(presetId));
+  }
+
+  const escHtml = (x) => String(x).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  // 양식 11~100: forms.js의 HTML 조각에 {{N}}/{{A}}/{{R}} 등 자리표시자를 채웁니다.
+  function buildFormHtml(t, d) {
+    const tpl = (window.SM3_FORMS || {})[t];
+    if (!tpl) return buildCardHtml(2, d);
+    const map = {
+      N: escHtml(d.name), N0: escHtml(Array.from(d.name)[0] || ""), A: fmt(d.amount), AM: fmt(Math.round(d.amount / 10000)),
+      R: pct(d.rate), R1: d.rate.toFixed(1), V: fmt(d.principal + d.amount), P: fmt(d.principal), D: d.date,
+    };
+    const html = tpl.replace(/\{\{(\w+)\}\}/g, (m, k) => (k in map ? map[k] : m));
+    return `<div class="sm3-card sm3-form ${t <= 50 ? "sm3-tw" : "sm3-sf"} sm3-f${t}">${html}</div>`;
+  }
+
   function buildCardHtml(presetId, d) {
+    if (Number(presetId) > 10) return buildFormHtml(Number(presetId), d);
     switch (Number(presetId)) {
       case 1:
         return `<div class="sm3-card sm3-s1">
@@ -1474,7 +1518,45 @@ html,body{ overflow:hidden; }
   const CROP_FORMAT_BOXES = ".sm3-s3-avatar,.sm3-s4-icon";
   const WEIGHT_POOL = [400];
 
+  function shrinkFit(el) {
+    const max = Number(el.getAttribute("data-fit")) || 24;
+    el.style.display = "block";
+    el.style.width = "100%";
+    el.style.whiteSpace = "nowrap";
+    el.style.overflow = "hidden";
+    let size = max;
+    el.style.fontSize = `${size}px`;
+    for (let g = 0; el.scrollWidth > el.clientWidth + 1 && size > 13 && g < 200; g++) {
+      size -= 1;
+      el.style.fontSize = `${size}px`;
+    }
+  }
+
+  // 양식 11~100 공통 태깅: 종목명/수익률/수익금은 크롭 대상, 금액(매수·평가)과 증권사명은 크롭 금지
+  function tagForm(card) {
+    [["n", "sm3-fn"], ["a", "sm3-fa"], ["r", "sm3-fr"]].forEach(([k, cls]) => {
+      card.querySelectorAll(`[data-k="${k}"]`).forEach((el) => {
+        el.classList.add(cls);
+        el.setAttribute("data-crop", "keep");
+      });
+    });
+    const root = card.firstElementChild;
+    card.querySelectorAll('[data-k="f"]').forEach((tok) => {
+      tok.setAttribute("data-crop-forbid", "1");
+      let el = tok.parentElement, best = null;
+      while (el && el !== card && el !== root) {
+        if (el.querySelector('[data-crop="keep"]')) break;
+        if ((el.textContent || "").trim().length > 40) break;
+        best = el;
+        el = el.parentElement;
+      }
+      if (best) best.setAttribute("data-crop-forbid", "1");
+    });
+    card.querySelectorAll("[data-fit]").forEach(shrinkFit);
+  }
+
   function tagCard(presetId, card) {
+    if (card.classList.contains("sm3-form")) { tagForm(card); return; }
     const pickW = () => WEIGHT_POOL[randInt(0, WEIGHT_POOL.length - 1)];
     card.style.setProperty("--w-name", String(pickW()));
     card.style.setProperty("--w-amt", String(pickW()));
@@ -1492,9 +1574,10 @@ html,body{ overflow:hidden; }
     const data = generateStockData(presetId, btn);
     const mount = document.getElementById("sm3CardMount");
     if (mount) {
-      mount.innerHTML = buildCardHtml(presetId, data);
+      const tplId = getTemplateId(presetId);
+      mount.innerHTML = buildCardHtml(tplId, data);
       const card = mount.querySelector(".sm3-card");
-      if (card) tagCard(presetId, card);
+      if (card) tagCard(tplId, card);
     }
     lastPreset = { presetId, btn };
     return data;
@@ -1842,7 +1925,28 @@ html,body{ overflow:hidden; }
     }
   }
 
+  function initTemplateInputs() {
+    const apply = () => {
+      const t = window.__cb3LocalExtra && window.__cb3LocalExtra.tpl;
+      if (!Array.isArray(t)) return;
+      t.forEach((v, i) => {
+        const el = document.getElementById(`inpSm3Tpl${i + 1}`);
+        if (el) el.value = String(clampTpl(v, i + 1));
+      });
+    };
+    window.addEventListener("cb3-state-applied", apply);
+    apply();
+    for (let i = 1; i <= 10; i++) {
+      const el = document.getElementById(`inpSm3Tpl${i}`);
+      if (!el) continue;
+      const onEdit = () => { if (window.__cbScheduleSave) window.__cbScheduleSave(); };
+      el.addEventListener("input", onEdit);
+      el.addEventListener("change", () => { el.value = String(clampTpl(el.value, i)); onEdit(); });
+    }
+  }
+
   function init() {
+    initTemplateInputs();
     initModeToggles();
     watchCongratsCaption();
     const firstBtn = document.querySelector('.preset-btn[data-preset="1"]');
