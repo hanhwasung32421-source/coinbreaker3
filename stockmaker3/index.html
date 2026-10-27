@@ -810,7 +810,7 @@ html,body{ overflow:hidden; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 27일 - 2</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 27일 - 3</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1203,8 +1203,8 @@ html,body{ overflow:hidden; }
           </details>
           </div>
           <div class="sm3-tpl-row">
-            <div class="sm3-tpl-title">프리셋 양식 (프리셋n = 양식 1~100번)</div>
-            <div class="sm3-tpl-grid"><label>프리셋1<input id="inpSm3Tpl1" type="number" min="1" max="100" step="1" value="1" /></label><label>프리셋2<input id="inpSm3Tpl2" type="number" min="1" max="100" step="1" value="2" /></label><label>프리셋3<input id="inpSm3Tpl3" type="number" min="1" max="100" step="1" value="3" /></label><label>프리셋4<input id="inpSm3Tpl4" type="number" min="1" max="100" step="1" value="4" /></label><label>프리셋5<input id="inpSm3Tpl5" type="number" min="1" max="100" step="1" value="5" /></label><label>프리셋6<input id="inpSm3Tpl6" type="number" min="1" max="100" step="1" value="6" /></label><label>프리셋7<input id="inpSm3Tpl7" type="number" min="1" max="100" step="1" value="7" /></label><label>프리셋8<input id="inpSm3Tpl8" type="number" min="1" max="100" step="1" value="8" /></label><label>프리셋9<input id="inpSm3Tpl9" type="number" min="1" max="100" step="1" value="9" /></label><label>프리셋10<input id="inpSm3Tpl10" type="number" min="1" max="100" step="1" value="10" /></label></div>
+            <div class="sm3-tpl-title">프리셋 양식 (프리셋n = 양식 1~103번)</div>
+            <div class="sm3-tpl-grid"><label>프리셋1<input id="inpSm3Tpl1" type="number" min="1" max="103" step="1" value="1" /></label><label>프리셋2<input id="inpSm3Tpl2" type="number" min="1" max="103" step="1" value="2" /></label><label>프리셋3<input id="inpSm3Tpl3" type="number" min="1" max="103" step="1" value="3" /></label><label>프리셋4<input id="inpSm3Tpl4" type="number" min="1" max="103" step="1" value="4" /></label><label>프리셋5<input id="inpSm3Tpl5" type="number" min="1" max="103" step="1" value="5" /></label><label>프리셋6<input id="inpSm3Tpl6" type="number" min="1" max="103" step="1" value="6" /></label><label>프리셋7<input id="inpSm3Tpl7" type="number" min="1" max="103" step="1" value="7" /></label><label>프리셋8<input id="inpSm3Tpl8" type="number" min="1" max="103" step="1" value="8" /></label><label>프리셋9<input id="inpSm3Tpl9" type="number" min="1" max="103" step="1" value="9" /></label><label>프리셋10<input id="inpSm3Tpl10" type="number" min="1" max="103" step="1" value="10" /></label></div>
           </div>
         </div>
 
@@ -1276,7 +1276,7 @@ window.CB3_LOCAL_STATE_EXTRA = function () {
   return { tpl: t };
 };
     </script>
-    <script src="../app.js?v=2026년 10월 27일 - 2"></script>
+    <script src="../app.js?v=2026년 10월 27일 - 3"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1367,7 +1367,7 @@ window.CB3_LOCAL_STATE_EXTRA = function () {
 
   const clampTpl = (v, fallback) => {
     const n = Math.round(Number(v));
-    return Number.isFinite(n) && n >= 1 && n <= 100 ? n : fallback;
+    return Number.isFinite(n) && n >= 1 && n <= 103 ? n : fallback;
   };
   function getTemplateId(presetId) {
     const el = document.getElementById(`inpSm3Tpl${presetId}`);
@@ -1383,6 +1383,16 @@ window.CB3_LOCAL_STATE_EXTRA = function () {
       N: escHtml(d.name), N0: escHtml(Array.from(d.name)[0] || ""), A: fmt(d.amount), AM: fmt(Math.round(d.amount / 10000)),
       R: pct(d.rate), R1: d.rate.toFixed(1), V: fmt(d.principal + d.amount), P: fmt(d.principal), D: d.date,
     };
+    // 양식 101~103용: 날짜 표기, 단가/수량(투자금과 같은 금액성 값이라 크롭에서는 제외됨)
+    const now = new Date();
+    const p2 = (v) => String(v).padStart(2, "0");
+    map.DK = `${String(now.getFullYear()).slice(2)}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
+    map.DI = `${now.getFullYear()}-${p2(now.getMonth() + 1)}-${p2(now.getDate())}`;
+    map.PU = fmt(Math.round(d.principal / 100));
+    map.Q = fmt(randInt(10, 3000));
+    const pb = randInt(150, 9000) * 10;
+    map.PB = fmt(pb);
+    map.PS = fmt(Math.round((pb * (1 + d.rate / 100)) / 10) * 10);
     const html = tpl.replace(/\{\{(\w+)\}\}/g, (m, k) => (k in map ? map[k] : m));
     return `<div class="sm3-card sm3-form ${t <= 50 ? "sm3-tw" : "sm3-sf"} sm3-f${t}">${html}</div>`;
   }
