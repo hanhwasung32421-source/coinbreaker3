@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Nanum+Gothic:wght@400;700;800&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Nanum+Gothic:wght@400;700;800&family=Jua&display=swap" />
     <link rel="stylesheet" href="forms.css" />
     <title>Stock Maker3</title>
     <style>
@@ -810,7 +810,7 @@ html,body{ overflow:hidden; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 11월 3일 - 2</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 11월 3일 - 3</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1276,7 +1276,7 @@ window.CB3_LOCAL_STATE_EXTRA = function () {
   return { tpl: t };
 };
     </script>
-    <script src="../app.js?v=2026년 11월 3일 - 2"></script>
+    <script src="../app.js?v=2026년 11월 3일 - 3"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1610,6 +1610,12 @@ window.CB3_LOCAL_STATE_EXTRA = function () {
     const rootRect = cardRoot.getBoundingClientRect();
     const full = { x: 0, y: 0, w: rootRect.width, h: rootRect.height, hide: [], rootW: rootRect.width, rootH: rootRect.height };
     if (!card) return full;
+    // data-nocrop 양식(104): 크롭 없이 카드 전체(첨부 이미지 그대로)를 정확히 캡처합니다.
+    const noCrop = card.querySelector("[data-nocrop]");
+    if (noCrop) {
+      const r = noCrop.getBoundingClientRect();
+      return { x: Math.floor(r.left - rootRect.left), y: Math.floor(r.top - rootRect.top), w: Math.ceil(r.width), h: Math.ceil(r.height), rootW: rootRect.width, rootH: rootRect.height };
+    }
     const keeps = [...card.querySelectorAll('[data-crop="keep"]')];
     if (!keeps.length) return full;
 
