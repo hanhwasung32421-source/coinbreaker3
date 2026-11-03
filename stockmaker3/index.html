@@ -810,7 +810,7 @@ html,body{ overflow:hidden; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 11월 3일 - 6</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 11월 3일 - 7</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1276,7 +1276,7 @@ window.CB3_LOCAL_STATE_EXTRA = function () {
   return { tpl: t };
 };
     </script>
-    <script src="../app.js?v=2026년 11월 3일 - 6"></script>
+    <script src="../app.js?v=2026년 11월 3일 - 7"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1580,8 +1580,8 @@ window.CB3_LOCAL_STATE_EXTRA = function () {
     card.querySelectorAll(CROP_FORBID).forEach((el) => el.setAttribute("data-crop-forbid", "1"));
   }
 
-  function renderPreset(presetId, btn) {
-    const data = generateStockData(presetId, btn);
+  function renderPreset(presetId, btn, reuseData) {
+    const data = reuseData || generateStockData(presetId, btn);
     const mount = document.getElementById("sm3CardMount");
     if (mount) {
       const tplId = getTemplateId(presetId);
@@ -1885,11 +1885,50 @@ window.CB3_LOCAL_STATE_EXTRA = function () {
     new MutationObserver(sync).observe(cap, { childList: true, characterData: true, subtree: true });
   }
 
+  // 프리셋을 누르면 그 프리셋의 "양식" 칸에 커서를 두고, 마우스는 프리셋 위에 둔 채 휠만 돌려도
+  // 양식 번호가 바뀌면서 같은 값으로 바로바로 다시 그려 보여줍니다. (휠 아래=다음 번호, 위=이전 번호)
+  let activePreset = null; // { presetId, btn, data }
+  let wheelPreviewTimer = null;
+  let lastWheelStep = 0;
+
+  function focusTemplateInput(presetId) {
+    const el = document.getElementById(`inpSm3Tpl${presetId}`);
+    if (!el) return;
+    try { el.focus({ preventScroll: true }); } catch { el.focus(); }
+  }
+
   function handlePreset(presetId, btn) {
     const data = renderPreset(presetId, btn);
+    activePreset = { presetId, btn, data };
     fillPresetCaption(presetId, data.rate);
     captureAndCopy();
+    focusTemplateInput(presetId);
   }
+
+  document.addEventListener(
+    "wheel",
+    (ev) => {
+      if (!activePreset) return;
+      const inp = document.getElementById(`inpSm3Tpl${activePreset.presetId}`);
+      if (!inp) return;
+      const over = ev.target.closest && (ev.target === inp || ev.target.closest(".preset-grid"));
+      if (!over) return;
+      ev.preventDefault();
+      const now = Date.now();
+      if (now - lastWheelStep < 60) return;
+      lastWheelStep = now;
+      const dir = ev.deltaY > 0 ? 1 : -1;
+      let t = clampTpl(inp.value, Number(activePreset.presetId)) + dir;
+      if (t > 104) t = 1;
+      if (t < 1) t = 104;
+      inp.value = String(t);
+      inp.dispatchEvent(new Event("input", { bubbles: true }));
+      renderPreset(activePreset.presetId, activePreset.btn, activePreset.data);
+      clearTimeout(wheelPreviewTimer);
+      wheelPreviewTimer = setTimeout(() => captureAndCopy(false), 150);
+    },
+    { passive: false }
+  );
 
   function handleGenerate() {
     if (lastPreset) {
