@@ -810,7 +810,7 @@ html,body{ overflow:hidden; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Stock Maker3</div>
-      <div class="topbar-right">버전 <span id="buildVersion">2026년 11월 3일 - 4</span></div>
+      <div class="topbar-right">버전 <span id="buildVersion">2026년 11월 3일 - 5</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1276,7 +1276,7 @@ window.CB3_LOCAL_STATE_EXTRA = function () {
   return { tpl: t };
 };
     </script>
-    <script src="../app.js?v=2026년 11월 3일 - 4"></script>
+    <script src="../app.js?v=2026년 11월 3일 - 5"></script>
     <script>
 /* ===== Stock Maker3: 프리셋 1~10 → stockmaker3 카드 1~10 렌더/캡처 =====
    coinbreaker의 기존 프리셋 클릭 로직(doGenerate/크롭 캡처)은 코인 선물 카드
@@ -1386,6 +1386,9 @@ window.CB3_LOCAL_STATE_EXTRA = function () {
     // 양식 101~103용: 날짜 표기, 단가/수량(투자금과 같은 금액성 값이라 크롭에서는 제외됨)
     const now = new Date();
     const p2 = (v) => String(v).padStart(2, "0");
+    const [ri, rd] = pct(d.rate).split(".");
+    map.RI = ri;
+    map.RD = rd || "00";
     map.DK = `${String(now.getFullYear()).slice(2)}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
     map.DI = `${now.getFullYear()}-${p2(now.getMonth() + 1)}-${p2(now.getDate())}`;
     map.PU = fmt(Math.round(d.principal / 100));
