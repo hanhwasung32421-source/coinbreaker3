@@ -32,21 +32,21 @@
 
 @font-face{
   font-family:"Noto Sans KR";
-  src:url("../Noto_Sans_KR/static/NotoSansKR-Regular.ttf") format("truetype");
+  src:url("Noto_Sans_KR/static/NotoSansKR-Regular.ttf") format("truetype");
   font-weight:400;
   font-style:normal;
   font-display:swap;
 }
 @font-face{
   font-family:"Noto Sans KR";
-  src:url("../Noto_Sans_KR/static/NotoSansKR-Medium.ttf") format("truetype");
+  src:url("Noto_Sans_KR/static/NotoSansKR-Medium.ttf") format("truetype");
   font-weight:500;
   font-style:normal;
   font-display:swap;
 }
 @font-face{
   font-family:"Noto Sans KR";
-  src:url("../Noto_Sans_KR/static/NotoSansKR-Bold.ttf") format("truetype");
+  src:url("Noto_Sans_KR/static/NotoSansKR-Bold.ttf") format("truetype");
   font-weight:600;
   font-style:normal;
   font-display:swap;
@@ -628,7 +628,7 @@ button.secondary{ background:#0c1220; }
   <body>
     <div class="topbar">
       <div class="topbar-left">Coin Maker2</div>
-            <div class="topbar-right">버전 <span id="buildVersion">2026년 10월 22일 - 15</span></div>
+            <div class="topbar-right">버전 <span id="buildVersion">2026년 11월 4일 - 2</span></div>
     </div>
     <div class="app">
       <div class="preview">
@@ -1092,15 +1092,18 @@ window.CB3_PRESET_INVEST_PREFIX = "inpMaker2Invest";
   const readCookie = () => {
     try {
       const m = document.cookie.split("; ").find((c) => c.startsWith(COOKIE + "="));
-      const arr = m ? JSON.parse(decodeURIComponent(m.slice(COOKIE.length + 1))) : [];
+      let arr = m ? JSON.parse(decodeURIComponent(m.slice(COOKIE.length + 1))) : null;
+      // file://로 열면 쿠키가 막히는 브라우저가 있어 localStorage(같은 컴퓨터)로 대신 읽습니다.
+      if (!Array.isArray(arr)) { try { arr = JSON.parse(localStorage.getItem(COOKIE) || "[]"); } catch { arr = []; } }
       return Array.isArray(arr) ? arr : [];
     } catch { return []; }
   };
   const writeCookie = () => {
+    const vals = ids.map((id) => String(document.getElementById(id).value || ""));
     try {
-      const vals = ids.map((id) => String(document.getElementById(id).value || ""));
       document.cookie = COOKIE + "=" + encodeURIComponent(JSON.stringify(vals)) + "; max-age=315360000; path=/; SameSite=Lax";
     } catch {}
+    try { localStorage.setItem(COOKIE, JSON.stringify(vals)); } catch {}
   };
   const saved = readCookie();
   ids.forEach((id, i) => {
@@ -1125,7 +1128,8 @@ window.CB3_PRESET_INVEST_PREFIX = "inpMaker2Invest";
   if (top) top.addEventListener("input", clearOverride);
 })();
     </script>
-    <script src="../app.js?v=2026년 10월 22일 - 15"></script>
+    <script>window.CB3_FORCE_ROW = "maker2";</script>
+    <script src="app.js?v=2026년 11월 4일 - 2"></script>
     <script>
 /* ===== Maker2 전용: 고정값/입력 제한/투자금 ===== */
 (() => {
